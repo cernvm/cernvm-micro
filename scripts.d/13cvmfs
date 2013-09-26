@@ -1,0 +1,139 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+# Fuse
+echo user_allow_other > ${DESTDIR}/etc/fuse.conf
+
+# Require some config files that reside on packages.d
+require_versioned_package cvmfs ${CVMFS_STRONG_VERSION}
+
+# Cvmfs binaries
+require_package cvmfs-config
+
+#===========================
+#FOR:RUN
+#===========================
+
+# Logging
+log_start "Starting CernVM File System..."
+
+# Setup cvmfs options
+CVMFS_SERVER="hepvm.cern.ch"
+CVMFS_REPOS="cernvm-devel.cern.ch"
+CVMFS_PROXY="DIRECT"
+CVMFS_URL=""
+CVMFS_KEY=""
+CERNVM_ARCH=$(uname -m)
+CERNVM_PATH=""
+
+# Parse command line options
+for x in $(cat /proc/cmdline); do
+	case $x in
+    	cvmfs_server=*)
+    		CVMFS_SERVER=${x#cvmfs_server=}
+    		;;
+    	cvmfs_repos=*)
+    		CVMFS_REPOS=${x#cvmfs_repos=}
+    		;;
+    	cvmfs_proxy=*)
+    		CVMFS_PROXY=${x#cvmfs_proxy=}
+    		;;
+    	cvmfs_key=*)
+    		CVMFS_KEY=${x#cvmfs_key=}
+    		;;
+    	cvmfs_url=*)
+    		CVMFS_URL=${x#cvmfs_url=}
+    		;;
+        cvmfs_repository_tag=*)
+                CVMFS_REPOSITORY_TAG=${x#cvmfs_repository_tag=}
+                ;;
+    	cernvm_path=*)
+    	    CERNVM_PATH=${x#cernvm_path=}
+    	    ;;
+
+    esac
+done
+
+# Apply context information
+[ "x$_UCONTEXT_CVMFS_HTTP_PROXY" != "x" ] && CVMFS_PROXY="$_UCONTEXT_CVMFS_HTTP_PROXY"
+[ "x$_UCONTEXT_CVMFS_BRANCH" != "x" ] && CVMFS_REPOS="$_UCONTEXT_CVMFS_BRANCH"
+[ "x$_UCONTEXT_CVMFS_TAG" != "x" ] && CVMFS_REPOSITORY_TAG="$_UCONTEXT_CVMFS_TAG"
+
+# Build path and URL
+[ -z "$CVMFS_URL" ] && CVMFS_URL="http://${CVMFS_SERVER}/cvmfs/${CVMFS_REPOS}"
+[ -z "$CVMFS_KEY" ] && CVMFS_KEY="/etc/cvmfs/keys/${CVMFS_REPOS}.pub"
+
+# Prepare cache dir
+CVMFS_CACHE="${ROOT_RW}/cache"
+[ ! -d "${CVMFS_CACHE}" ] && mkdir -p "${CVMFS_CACHE}"
+
+# Mount CVMFS in the ROOT_RO directory
+ulimit -n 65536
+
+# Set cache size
+if [ ${ROOT_SIZE_MB} -gt 4000 ]; then
+  CVMFS_QUOTA_LIMIT=2000
+else
+  CVMFS_QUOTA_LIMIT=$((${ROOT_SIZE_MB}/2))
+fi
+
+CVMFS_FRESH=1
+if [ -f ${ROOT_RW}/aux/cvmfs_snapshot ]; then
+  CVMFS_FRESH=0
+  CVMFS_ROOT_HASH=$(head -n1 ${ROOT_RW}/aux/cvmfs_snapshot)
+  CVMFS_REPOSITORY_TAG=$(tail -n1 ${ROOT_RW}/aux/cvmfs_snapshot)
+fi
+
+cat <<EOF > /etc/cvmfs/config.d/${CVMFS_REPOS}.conf
+CVMFS_CACHE_BASE=${CVMFS_CACHE}
+CVMFS_NFILES=65536
+CVMFS_RELOAD_SOCKETS=${CVMFS_CACHE}
+CVMFS_QUOTA_LIMIT=${CVMFS_QUOTA_LIMIT}
+CVMFS_SERVER_URL=${CVMFS_URL}
+CVMFS_HTTP_PROXY=${CVMFS_PROXY}
+CVMFS_PUBLIC_KEY=${CVMFS_KEY}
+CVMFS_CHECK_PERMISSIONS=yes
+CVMFS_IGNORE_SIGNATURE=no
+CVMFS_AUTO_UPDATE=no
+CVMFS_NFS_SOURCE=no
+CVMFS_PROXY_RESET_AFTER=300
+CVMFS_MAX_RETRIES=4
+CVMFS_BACKOFF_INIT=2
+CVMFS_BACKOFF_MAX=12
+CVMFS_USYSLOG=${CVMFS_CACHE}/usyslog
+EOF
+
+[ x"$CVMFS_REPOSITORY_TAG" != "x" ] && echo "CVMFS_REPOSITORY_TAG=${CVMFS_REPOSITORY_TAG}" >> /etc/cvmfs/config.d/${CVMFS_REPOS}.conf
+[ x"$CVMFS_ROOT_HASH" != "x" ] && echo "CVMFS_ROOT_HASH=${CVMFS_ROOT_HASH}" >> /etc/cvmfs/config.d/${CVMFS_REPOS}.conf 
+
+cvmfs2 -o allow_other,config=/etc/cvmfs/config.d/${CVMFS_REPOS}.conf,cvmfs_suid ${CVMFS_REPOS} ${ROOT_RO} 2>/dev/null >/dev/null
+#cvmfs2 -d -f -o allow_other,config=/etc/cvmfs/config.d/${CVMFS_REPOS}.conf,cvmfs_suid ${CVMFS_REPOS} ${ROOT_RO}
+[ $? -ne 0 ] && panic "Unable to mount cvmfs root filesystem!"
+
+NAMESERVER=$(cat /etc/resolv.conf | grep ^nameserver | head -n1 | awk '{print $2}')
+echo -n "nameserver set $NAMESERVER" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
+
+# Export key
+cp ${CVMFS_KEY} ${ROOT_RW}/aux/cvmfskey.pub
+
+if [ $CVMFS_FRESH -eq 1 ]; then
+  # TODO xattr from busybox
+  CVMFS_ROOT_HASH=$(xattr_root_hash ${ROOT_RO})
+  echo $CVMFS_ROOT_HASH > ${ROOT_RW}/aux/cvmfs_snapshot
+  echo $CVMFS_REPOSITORY_TAG >> ${ROOT_RW}/aux/cvmfs_snapshot
+fi
+
+# Rebase read-only root
+AUFS_RO="${ROOT_RO}/${CERNVM_PATH}"
+
+# Move root to the presistent directory
+AUFS_RW="${ROOT_RW}/persistent"
+[ ! -d "${AUFS_RW}" ] && mkdir -p "${AUFS_RW}"
+
+# Load nested catalog
+ls $AUFS_RO > /dev/null
+
+# Ok
+log_info "connected to ${CVMFS_REPOS}"

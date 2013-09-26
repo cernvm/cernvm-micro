@@ -1,0 +1,9 @@
+/etc/fstab
+/etc/sysconfig/network
+/etc/sysconfig/network-scripts/ifcfg-eth0
+/etc/init.d/network
+  * don't touch /var/lock/subsys/network (network should stay alive during shutdown)
+  * preload /etc/init.d/networking-scripts (network should be restartable)
+/etc/init.d/halt
+  * exclude cvmfs PIDs from TERM/KILL
+  * bring cvmfs into read-only mode, remount scratch partition, remount aufs partition

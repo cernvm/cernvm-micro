@@ -1,0 +1,74 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+require_versioned_package busybox ${BB_STRONG_VERSION}
+require_versioned_package extras ${EXTRAS_STRONG_VERSION}
+
+# Expand busybox symbolic links
+echo "[INF] Expanding busybox links"
+BB_BINARY=packages.d/busybox/busybox-${BB_STRONG_VERSION}/sbin/busybox
+[ ! -x $BB_BINRAY ] && exit 1
+for CMD in $(${BB_BINARY} --list); do
+    [ ! -f "${DESTDIR}/bin/${CMD}" ] && ln -vs "/sbin/busybox" "${DESTDIR}/bin/${CMD}"
+done
+
+echo ${UCERNVM_STRONG_VERSION} > ${DESTDIR}/version
+
+
+#===========================
+#FOR:RUN
+#===========================
+# Setup variables (We don't need to export because all the scripts are fused in a single file)
+
+# Prepare base directories
+[ -d /dev ] || mkdir -m 0755 /dev
+[ -d /root ] || mkdir -m 0700 /root
+[ -d /sys ] || mkdir /sys
+[ -d /proc ] || mkdir /proc
+[ -d /tmp ] || mkdir /tmp
+mkdir -p /var/lock
+mount -t sysfs -o nodev,noexec,nosuid sysfs /sys 2>/dev/null >/dev/null
+mount -t proc -o nodev,noexec,nosuid proc /proc 2>/dev/null >/dev/null
+mount -t devtmpfs -o mode=0755 none /dev 2>/dev/null >/dev/null
+
+# Mount /dev/pts
+mkdir /dev/pts
+mount -t devpts -o noexec,nosuid,gid=5,mode=0620 devpts /dev/pts 2>/dev/null >/dev/null
+
+# Check for floppy drive
+modprobe -q floppy
+head -c1 /dev/fd0 > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  rmmod floppy
+fi
+
+# Ensure white on black console
+clear
+
+# Logging
+echo ""
+echo "* Welcome to micro-CernVM"
+echo "* Beta release $(cat /version)"
+echo ""
+#log_start "Setting up environment..."
+
+# Final targets
+ROOT="/root"
+INIT="/sbin/init"
+
+# Intermediate mountpoints
+ROOT_RW="/root.rw"
+ROOT_RO="/root.ro"
+AUFS_RW="/root.rw"
+AUFS_RO="/root.ro"
+
+# Make missing directories
+[ ! -d "${ROOT_RW}" ] && mkdir "${ROOT_RW}"
+[ ! -d "${ROOT_RO}" ] && mkdir "${ROOT_RO}"
+[ ! -d "${AUFS_RW}" ] && mkdir "${AUFS_RW}"
+[ ! -d "${AUFS_RO}" ] && mkdir "${AUFS_RO}"
+
+# Ok
+#log_ok

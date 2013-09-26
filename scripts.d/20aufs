@@ -1,0 +1,22 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+# AUFS module statically in CernVM kernel
+#require_mod aufs
+
+#===========================
+#FOR:RUN
+#===========================
+
+# Mount aufs union on root
+mount -t aufs -o "dirs=${AUFS_RW}=rw:${AUFS_RO}=ro" root "${ROOT}"
+[ $? -ne 0 ] && panic "Unable to mount the union filesystem!"
+chmod 755 "${ROOT}"
+
+# Move ro/rw directories inside 
+[ ! -d "${ROOT}/mnt/.ro" ] && mkdir "${ROOT}/mnt/.ro"
+[ ! -d "${ROOT}/mnt/.rw" ] && mkdir "${ROOT}/mnt/.rw"
+mount --move /root.rw "${ROOT}/mnt/.rw"
+mount --move /root.ro "${ROOT}/mnt/.ro"

@@ -1,0 +1,23 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+
+#===========================
+#FOR:RUN
+#===========================
+
+# Mount aufs union on root
+
+if [ $CVMFS_FRESH -eq 1 ]; then
+  if [ $(ls -lah "$AUFS_RW" 2>/dev/null | wc -l) -ne 3 ]; then
+    log_start "Rebasing system to new version "
+    resolve_aufs_conflicts "$AUFS_RO" "$AUFS_RW" ${ROOT_RW}/aux/rebase-${CVMFS_ROOT_HASH}.log
+    log_ok
+
+    #log_start "Merging account database"
+    #/bin/account-merge.sh /etc/account-merge.conf
+    #log_ok
+  fi
+fi

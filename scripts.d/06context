@@ -1,0 +1,107 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+require_versioned_package curl ${CURL_STRONG_VERSION}
+
+#===========================
+#FOR:RUN
+#===========================
+
+USER_DATA=/user-data
+UCONTEXT_TMP=/ucontext
+UCONTEXT_SRC="(none)"
+UCONTEXT_TIMEOUT=2
+UCONTEXT_TIMEOUT_DATA=10
+UCONTEXT_RETRIES=2
+
+fetch_configdrive() {
+  mkdir -p /context_mount
+  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}'); do
+    filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
+    if [ "x$filesystem" = "xiso9660" -o "x$filesystem" = "xvfat" ]; then
+      mount -o ro -t $filesystem /dev/$P /context_mount >/dev/null 2>&1
+      if [ $? -eq 0 ]; then
+        if cp /context_mount/openstack/latest/user_data ${USER_DATA} 2>/dev/null; then
+          UCONTEXT_SRC="ConfigDrive"
+          umount /context_mount
+          break
+        fi
+        umount /context_mount
+      fi
+    fi
+  done
+  rmdir /context_mount
+}
+
+
+fetch_vsphere() {
+  mkdir -p /context_mount
+  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}'); do
+    filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
+    if [ "x$filesystem" = "xiso9660" ]; then
+      mount -o ro -t $filesystem /dev/$P /context_mount >/dev/null 2>&1
+      if [ $? -eq 0 ]; then
+        if cp /context_mount/user-data.txt ${USER_DATA} 2>/dev/null; then
+          UCONTEXT_SRC="vSphere"
+          umount /context_mount
+          break
+        fi
+        umount /context_mount
+      fi
+    fi
+  done
+  rmdir /context_mount
+}
+
+
+fetch_rhevm() {
+  :
+}
+
+download_userdata() {
+  local server=$1
+  local url=$2
+
+  nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    curl -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
+    if [ $? -eq 0 ]; then
+      return 0
+    else
+      rm -f ${USER_DATA}
+    fi
+  fi
+  
+  # Failure
+  return 1
+}
+
+fetch_ec2() {
+  download_userdata 169.254.169.254 http://169.254.169.254/2009-04-04/user-data
+  [ $? -eq 0 ] && UCONTEXT_SRC="EC2"
+}
+
+
+fetch_openstack() {
+  local default_gateway=$(route | grep ^default | awk '{print $2}')
+  download_userdata $default_gateway http://${default_gateway}/latest/user-data
+  [ $? -eq 0 ] && UCONTEXT_SRC="OpenStack"
+}
+
+
+if [ ! -b "${ROOT_DEV}" ]; then
+  log_start "Contextualizing VM..."
+  for data_source in configdrive vsphere rhevm ec2 openstack; do
+    [ -f ${USER_DATA} ] && break
+    fetch_${data_source}
+  done
+  if [ -f ${USER_DATA} ]; then
+    cat ${USER_DATA} | parse_user_data > ${UCONTEXT_TMP}
+    . ${UCONTEXT_TMP}
+  fi
+  
+  log_info ${UCONTEXT_SRC}
+fi
+

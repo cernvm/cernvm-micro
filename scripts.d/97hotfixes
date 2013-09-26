@@ -1,0 +1,24 @@
+#!/bin/sh
+#===========================
+#FOR:RUN
+#===========================
+
+# This file contains all the hotfixes that the underlaying CVMFS filesystem 
+# failed to provide. 
+
+# Change some critical permissions
+chmod 1777 ${ROOT}/tmp
+chmod 4555 ${ROOT}/usr/bin/sudo
+
+# Create some missing folders
+[ ! -d ${ROOT}/cvmfs ] && mkdir ${ROOT}/cvmfs
+
+# Copy kernel modules
+if [ ! -d ${ROOT}/lib/modules/$(uname -r) ]; then
+  log_start "Posting kernel modules..."
+  cp -a /lib/modules/$(uname -r) ${ROOT}/lib/modules
+  log_ok
+fi
+
+# Run bootstrap script provided by the repository
+[ -f ${ROOT}/.ucernvm_bootstrap ] && . ${ROOT}/.ucernvm_bootstrap $ROOT

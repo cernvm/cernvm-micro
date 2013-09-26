@@ -1,0 +1,4 @@
+ec2-bundle-image -c CERTFILE -k KEYFILE -u AWSACCOUNTID -i ucernvm-1.12.fat --debug --destination bundle --arch x86_64 --kernel aki-825ea7eb
+ec2-upload-bundle -m bundle/ucernvm-1.12.fat.manifest.xml -b eplanet2013 -a ACCESSKEY -s SECRETKEY
+
+ec2-register -O ACCESSKEY -W SECRETKET -D bundle/ucernvm-1.12.fat.manifest.xml -a x86_64 eplanet2013/ucernvm-2.12.fat.manifest.xml  -d "eplanet first test" -n ucernvm-testuser

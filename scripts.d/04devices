@@ -1,0 +1,110 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+
+#===========================
+#FOR:RUN
+#===========================
+
+# Create /dev/disk/
+mkdir -p /dev/disk/by-label
+
+# Populate block devices and update by-label symlinks
+FIRST_EMPTY_DISK=""
+FIRST_EMPTY_PARTITION=""
+sync_block() {
+    mkdir -p /testmount
+    FIRST_EMPTY_DISK=""
+    FIRST_EMPTY_PARTITION=""
+    BOOT_DISK=""
+    BOOT_PARTITION=""
+
+    _IFS="$IFS"
+    IFS=$'\n'
+    for L in $(cat /proc/partitions | tail -n+3); do
+        MAJOR=$(echo "$L" | awk '{ print $1 }')
+        MINOR=$(echo "$L" | awk '{ print $2 }')
+        DEV=$(echo "$L" | awk '{ print $4 }')
+        #echo "sync_block: Device $DEV"
+
+        # Make the block device if it's missing
+        [ ! -b /dev/${DEV} ] && mknod /dev/${DEV} b ${MAJOR} ${MINOR}
+
+        # Where did we land
+        IS_PARTITION=$(echo "${DEV}" | grep -c '[0-9]$')
+        HOSTING_DISK=$(echo $DEV | tr -d [0-9])
+        IS_ON_DISK=0
+        [ -b /dev/$HOSTING_DISK ] && IS_ON_DISK=1
+        IS_EMPTY_DISK=0
+        [ $(find /dev -maxdepth 1 -name "${HOSTING_DISK}[0-9]*" | wc -l) -eq 0 ] && IS_EMPTY_DISK=1
+        IS_REMOVABLE=0
+        [ $IS_PARTITION -eq 1 ] && [ -f /sys/block/${DEV}/removable ] && \
+            [ "x$(cat /sys/block/${DEV}/removable)" = "x1" ] && IS_REMOVABLE=1
+        #echo "sync_block: IS_PARTITION $IS_PARTITION, HOSTING_DISK: $HOSTING_DISK, IS_ON_DISK: $IS_ON_DISK"
+
+        # Fetch label and update /dev/disk/...
+        if [ $IS_PARTITION -eq 1 ]; then
+            DEV_LABEL=$(e2label /dev/$DEV 2>/dev/null)
+            [ $? -eq 0 ] && ln -s /dev/${DEV} /dev/disk/by-label/${DEV_LABEL}
+        fi
+
+        # Skip removable devices
+        if [ $IS_REMOVABLE -eq 1 ]; then
+            continue;
+        fi
+
+        # Skip mountable devices, they are not empty
+        if [ $IS_PARTITION -eq 1 ]; then
+            #echo "sync_block: try mounting /dev/$DEV"
+            mount -o ro /dev/$DEV /testmount 2>/dev/null
+            if [ $? -eq 0 ]; then
+                # Check if the sentinel file is here indicating a boot disk
+                if [ -f /testmount/.ucernvm_boot_loader ]; then
+                    BOOT_PARTITION="$DEV"
+                    BOOT_DISK="$HOSTING_DISK"
+                fi
+
+                # Amazon pre-formats ephemeral storage.  Test for it.
+                IS_EXT3=$(grep "^/dev/$DEV /testmount" /proc/mounts | grep -c ext3)
+                IS_EMPTY=0
+                [ $IS_EXT3 -eq 1 -a $(ls -lah /testmount | wc -l) -eq 4 ] && IS_EMPTY=1
+                umount /testmount
+
+                if [ $IS_EMPTY -eq 1 ]; then
+                    # wipe it out and reformat later
+                    dd if=/dev/zero of=/dev/$DEV bs=1024 count=100000 2>&1 >/dev/null
+                else
+                    continue
+                fi
+            fi
+        fi
+
+        # Save the first empty disk / partition
+        if [ "x$FIRST_EMPTY_PARTITION" = "x" -a $IS_PARTITION -eq 1 ]; then
+            FIRST_EMPTY_PARTITION=$DEV
+            #echo "sync_block: set FIRST_EMPTY_PARTITION=$FIRST_EMPTY_PARTITION"
+        fi
+        if [ "x$FIRST_EMPTY_DISK" = "x" -a $IS_EMPTY_DISK -eq 1 ]; then
+            FIRST_EMPTY_DISK=$HOSTING_DISK
+            #echo "sync_block: set FIRST_EMPTY_DISK=$FIRST_EMPTY_DISK"
+        fi
+    done
+    IFS="$_IFS"
+    unset _IFS
+
+    #echo "sync_block: end of function, FIRST_EMPTY_PARTITION=$FIRST_EMPTY_PARTITION"
+}
+
+# Synchronize the block devices
+sync_block
+
+# Check for label also in some other places
+for DEV in sr{0,1}; do
+    DEV_LABEL=$(e2label /dev/$DEV 2>/dev/null)
+    [ $? -eq 0 ] && ln -s /dev/${DEV} /dev/disk/by-label/${LABEL}
+done
+
+ROOT_DEV=/dev/disk/by-label/UROOT
+

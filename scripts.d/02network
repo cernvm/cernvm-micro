@@ -1,0 +1,28 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+require_package udhcpc
+
+#===========================
+#FOR:RUN
+#===========================
+
+# Logging
+log_start "Starting networking..."
+
+# Bringing up network devices
+DEVICES=$(ifconfig -a | grep '^[a-z]' | awk '{ print $1 }')
+for DEV in $DEVICES; do
+   if [ "$DEV" != "lo" ]; then
+      ifconfig $DEV up
+   fi
+done
+
+# Obtain IP address
+udhcpc -qnf -t 20 2>/dev/null >/dev/null
+
+
+# Ok
+log_ok

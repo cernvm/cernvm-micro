@@ -1,0 +1,36 @@
+#!/bin/sh
+#===========================
+#FOR:RUN
+#===========================
+
+for x in $(cat /proc/cmdline); do
+        case $x in
+        cvmdebug)
+                panic Debug mode
+        ;;
+    esac
+done
+
+# Unmount filesystems
+umount /sys
+umount /proc
+umount /dev/pts
+# Cannot unmount /dev because of /dev/fuse!
+
+# Prepare the pivot point
+#[ ! -d "${ROOT}/dev/.initrd" ] && mkdir "${ROOT}/dev/.initrd"
+#mount -o bind / ${ROOT}/dev/.initrd
+
+# Make some missing devices
+[ -e ${ROOT}/dev/console ] || mknod -m 0600 ${ROOT}/dev/console c 5 1
+[ -e ${ROOT}/dev/null ] || mknod ${ROOT}/dev/null c 1 3
+
+# Spacer for the SLC banner
+echo ""
+
+# Chroot and boot
+#cd ${ROOT}
+#pivot_root . ${ROOT}/dev/.initrd
+#exec chroot ${ROOT} ${INIT} </dev/console >/dev/console 2>&1
+exec switch_root -c /dev/console ${ROOT} /sbin/init "$@"
+panic "Unable to invoke init!"

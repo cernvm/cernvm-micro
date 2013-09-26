@@ -1,0 +1,11 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+#===========================
+#FOR:RUN
+#===========================
+
+# Remove all the unused files from initrd
+# This is usually taken care of switch_root

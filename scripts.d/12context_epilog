@@ -1,0 +1,18 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+#===========================
+#FOR:RUN
+#===========================
+
+UCONTEXT=${ROOT_RW}/context/ucontext
+
+if [ -f ${UCONTEXT_TMP} ]; then
+  mkdir -p ${ROOT_RW}/context
+  mv ${UCONTEXT_TMP} ${UCONTEXT}
+fi
+
+[ -f ${UCONTEXT} ] && . ${UCONTEXT}
+

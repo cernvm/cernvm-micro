@@ -1,0 +1,35 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+require_versioned_package kexec ${KEXEC_STRONG_VERSION}
+
+#===========================
+#FOR:RUN
+#===========================
+
+if [ -f ${ROOT_RW}/kexec/apply ]; then
+  version=$(cat ${ROOT_RW}/kexec/apply | grep "^version=" | cut -d= -f2)
+  if [ "x$version" != "x$(uname -r)" ]; then
+    log_start "kexec into kernel $version..."
+    kernel=${ROOT_RW}/kexec/$(cat ${ROOT_RW}/kexec/apply | grep "^kernel=" | cut -d= -f2)
+    initrd=${ROOT_RW}/kexec/$(cat ${ROOT_RW}/kexec/apply | grep "^initrd=" | cut -d= -f2)
+    cmdline=$(cat ${ROOT_RW}/kexec/apply | grep "^cmdline=" | cut -d= -f2)
+    if [ "x$cmdline" = "x" ]; then
+      cmdline=$(cat /proc/cmdline)
+    fi
+
+    mount -o remount,ro ${ROOT_RW}
+    NETDEVS=$(ifconfig -a | grep '^[a-z]' | awk '{ print $1 }')
+    for DEV in $NETDEVS; do
+      if [ "$DEV" != "lo" ]; then
+        ifconfig $DEV down
+      fi
+    done
+    kexec -l $kernel --initrd=$initrd --command-line="$cmdline"
+    clear
+    kexec -e
+  fi
+fi
+

@@ -1,0 +1,35 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+# Common network modules
+# All modules available in the ramdisk
+#require_mod e100
+#require_mod e1000
+#require_mod pcnet32
+#require_mod 8139too
+
+#===========================
+#FOR:RUN
+#===========================
+
+# Logging
+log_start "Loading predefined modules..."
+
+# Load modules
+#modprobe vmxnet
+modprobe e100
+modprobe e1000
+modprobe pcnet32
+modprobe 8139too
+
+# Load modules defined by the /etc/modules list
+if [ -f /etc/modules ]; then
+    for MOD in $(cat /etc/modules); do
+        [ ! -z "$MOD" -a "${MOD:0:1}" != "#" ] && modprobe -qb $MOD
+    done
+fi
+
+# Ok
+log_ok

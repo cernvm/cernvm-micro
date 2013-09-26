@@ -1,0 +1,19 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+#===========================
+#FOR:RUN
+#===========================
+
+# Save cvmfs PIDs so they are not killed on shutdown
+
+cat /dev/null > ${ROOT}/.cvmfs_pids
+
+for proc in $(find /proc -maxdepth 1 -type d); do
+  if [ "x$(readlink ${proc}/exe)" = x"/usr/bin/cvmfs2" ]; then
+    echo $(basename ${proc}) >> ${ROOT}/.cvmfs_pids 
+  fi
+done
+

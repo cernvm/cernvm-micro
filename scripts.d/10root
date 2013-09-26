@@ -1,0 +1,122 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+# Include e2label, e2fsck, mke2fs
+require_versioned_package e2fsprogs ${E2FSPROGS_STRONG_VERSION}
+
+# Require disk partitioning tools
+require_versioned_package sfdisk ${SFDISK_STRONG_VERSION}
+
+#===========================
+#FOR:RUN
+#===========================
+
+ROOT_CREATE=0
+DEFAULT_SIZE_BYTES=$((20*1024*1024*1024))
+DEFAULT_SIZE_MB=$((${DEFAULT_SIZE_BYTES}/(1024*1024)))
+
+# Partition / format if necessary
+if [ ! -b "${ROOT_DEV}" ]; then
+    # Make partition table on ephemeral storage
+    if [ "x$FIRST_EMPTY_DISK" != "x" -a ! "x$_UCONTEXT_USE_BOOTHD" = "x1" ]; then
+        log_start "Partitioning /dev/${FIRST_EMPTY_DISK}..."
+	DISK_SIZE_BYTES=$(blockdev --getsize64 /dev/${FIRST_EMPTY_DISK})
+        if [ "x$_UCONTEXT_RESIZE_ROOTFS" != "x1" -a ${DISK_SIZE_BYTES} -gt ${DEFAULT_SIZE_BYTES} ]; then
+          # Use first 20G
+          PARTITION_SIZE_MB=${DEFAULT_SIZE_MB}
+          # Partition rest to avoid the need to reboot later
+          PARTITION_REST="\n,,83"
+        else
+          # use all
+          PARTITION_SIZE_MB=
+        fi
+        echo -e "0,${PARTITION_SIZE_MB},83${PARTITION_REST}" | sfdisk -uM /dev/${FIRST_EMPTY_DISK} >/dev/null 2>/dev/null
+        [ $? -ne 0 ] && panic "Unable to partition root disk ${FIRST_EMPTY_DISK}"
+	# Update block devices
+        sync_block
+        log_ok
+    fi
+
+    # Last resort: create another partition on boot disk
+    if [ "x$FIRST_EMPTY_PARTITION" = "x" -a "x$BOOT_DISK" != "x" ]; then
+        log_start "Adding partition(s) to boot disk /dev/${BOOT_DISK}..."
+        FREE_SIZE_BYTES=$(blockdev --getsize64 /dev/${BOOT_DISK})
+        FREE_SIZE_BYTES=$(($FREE_SIZE_BYTES - $(blockdev --getsize64 /dev/${BOOT_PARTITION})))
+        # 10M safety margin
+        FREE_SIZE_BYTES=$(($FREE_SIZE_BYTES - 20*1024*1024))
+
+        # Less than 750M?  Give up
+        if [ ${FREE_SIZE_BYTES} -lt $((750*1024*1024)) ]; then
+            panic "No ephemeral storage, not enough free space on boot HD"
+        fi
+
+        if [ "x$_UCONTEXT_RESIZE_ROOTFS" != "x1" -a ${FREE_SIZE_BYTES} -gt ${DEFAULT_SIZE_BYTES} ]; then
+            # Use first 20G
+            PARTITION_SIZE_MB=${DEFAULT_SIZE_MB}
+            # Partition rest to avoid the need to reboot later
+            PARTITION_REST="n\np\n3\n\n\n"
+        else
+            # use all
+            PARTITION_SIZE_MB=
+        fi
+        echo -e "n\np\n2\n\n+${PARTITION_SIZE_MB}M\n${PARTITION_REST}p\nw\n" | fdisk /dev/${BOOT_DISK} >/dev/null 2>/dev/null
+        # Update block devices
+        sync_block
+        log_ok
+    fi
+
+    #cat /proc/partitions
+    #echo "empty disk $FIRST_EMPTY_DISK"
+    #echo "empty partition $FIRST_EMPTY_PARTITION"
+    [ "x$FIRST_EMPTY_PARTITION" = "x" ] && panic "Unable to find empty partition"
+
+    # Create ext3 filesystem on the disk
+    log_start "Formatting /dev/${FIRST_EMPTY_PARTITION}..."
+    mke2fs -j -L UROOT /dev/${FIRST_EMPTY_PARTITION} >/dev/null 2>/dev/null
+    [ $? -ne 0 ] && panic "Unable to create ext3 filesystem in /dev/${FIRST_EMPTY_PARTITION}"
+    tune2fs -c0 -i0 /dev/${FIRST_EMPTY_PARTITION} >/dev/null 2>/dev/null
+    [ $? -ne 0 ] && panic "Unable to create ext3 filesystem in /dev/${FIRST_EMPTY_PARTITION}"
+    sync_block
+    log_ok
+
+    ROOT_CREATE=1
+fi
+
+log_start "Mounting root filesystem..."
+
+/sbin/e2fsck -p "${ROOT_DEV}" 2>&1 | grep -v ext2fs_check_if_mount | grep -v "UROOT: clean"
+
+# Mount the root filesystem as defined by the boot parameters
+mount ${ROOT_DEV} ${ROOT_RW}
+[ $? -ne 0 ] && panic "Unable to mount root device ${ROOT_DEV}!"
+
+# If we are asked to create partition information, do it now
+if [ $ROOT_CREATE -eq 1 ]; then
+    # Make some required directories
+    [ ! -d "${ROOT_RW}/aux" ] && mkdir "${ROOT_RW}/aux"
+    [ ! -d "${ROOT_RW}/persistent" ] && mkdir "${ROOT_RW}/persistent"
+    [ ! -d "${ROOT_RW}/cache" ] && mkdir "${ROOT_RW}/cache"
+    [ ! -d "${ROOT_RW}/cvmfs" ] && mkdir "${ROOT_RW}/cvmfs"
+fi
+
+# Post busybox
+[ ! -f ${ROOT_RW}/aux/busybox ] && cp /sbin/busybox ${ROOT_RW}/aux
+
+# Safety space
+if [ ! -d ${ROOT_RW}/aux/safety ]; then
+  mkdir -p ${ROOT_RW}/aux/safety
+  dd if=/dev/zero of=${ROOT_RW}/aux/safety/50m bs=1024 count=$((50*1024)) 2>/dev/null
+  inode_spacer=1
+  while [ $inode_spacer -lt 128 ]; do
+    touch ${ROOT_RW}/aux/safety/inode_spacer$inode_spacer
+    inode_spacer=$(($inode_spacer+1))
+  done
+fi
+
+# Determine the size of the hard disk
+ROOT_SIZE_MB=$(df -kP ${ROOT_RW} | tail -1 | awk '{print int($2/1024)}')
+
+# Ok
+log_ok

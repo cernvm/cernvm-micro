@@ -1,0 +1,27 @@
+#!/bin/sh
+#===========================
+#FOR:RUN
+#===========================
+
+# This file contains all the hotfixes that the underlaying CVMFS filesystem 
+# failed to provide. 
+
+if [ -f ${ROOT}/.ucernvm_pinfiles ]; then
+  log_start "Pinning core file set..."
+  add_prefix=${AUFS_RO#${ROOT_RO}}
+  cat ${ROOT}/.ucernvm_pinfiles | while read; do 
+    file=$REPLY
+    [ ! -f ${ROOT}$file ] && continue
+    if [ -h ${ROOT}$file ]; then
+      file=$(readlink -f ${ROOT}$file)
+      file=${file#${ROOT}}
+    fi
+    file="${add_prefix}$file"
+    result=$(echo -n "pin $file" | nc local:/${ROOT}/mnt/.rw/cache/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS})
+    if [ "x$result" != "xOK" ]; then
+      echo "failed pinning $file"
+    fi 
+  done
+  log_ok
+fi
+
