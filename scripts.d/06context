@@ -36,6 +36,27 @@ fetch_configdrive() {
 }
 
 
+fetch_opennebula() {
+  mkdir -p /context_mount
+  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}'); do
+    filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
+    if [ "x$filesystem" = "xiso9660" -o "x$filesystem" = "xvfat" ]; then
+      mount -o ro -t $filesystem /dev/$P /context_mount >/dev/null 2>&1
+      if [ $? -eq 0 ]; then
+        if [ -f /context_mount/context.sh ]; then
+          ( source /context_mount/context.sh && echo ${EC2_USER_DATA} ) | base64 -d > ${USER_DATA}
+          UCONTEXT_SRC="OpenNebula"
+          umount /context_mount
+          break
+        fi
+        umount /context_mount
+      fi
+    fi
+  done
+  rmdir /context_mount
+}
+
+
 fetch_vsphere() {
   mkdir -p /context_mount
   for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}'); do
@@ -93,7 +114,7 @@ fetch_openstack() {
 
 if [ ! -b "${ROOT_DEV}" ]; then
   log_start "Contextualizing VM..."
-  for data_source in configdrive vsphere rhevm ec2 openstack; do
+  for data_source in configdrive opennebula vsphere rhevm ec2 openstack; do
     [ -f ${USER_DATA} ] && break
     fetch_${data_source}
   done
