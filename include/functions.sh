@@ -215,16 +215,18 @@ function process_file {
     local INTERPRETER=''
     local CONTEXT=''
     while read -r LINE; do
+	#echo "${LINE}" >> ${DESTDIR}/lines
         if [ -z "$INTERPRETER" ]; then
             # Fetch first line as interpreter
             INTERPRETER=${LINE}
         else
             LINE=$(__trim "${LINE}")
+            #echo "${LINE}" >> ${DESTDIR}/lines
             if [ $(echo "$LINE" | grep -Ec '^#\s*FOR:') -eq 1 ]; then
                 # Switch contexts when reached context changing lines
                 CONTEXT=$(echo "$LINE" | awk -F':' '{ print $2 }')
                 echo "SWITCHED: $CONTEXT"
-            elif [ ! -z "$LINE" -a "${LINE:0:1}" != "#" ]; then
+            elif [ ! -z "$LINE" ] && [ "${LINE:0:1}" != "#" ]; then
                 # Direct contents to the appropriate targets
                 if [ "${CONTEXT}" == "BUILD" ]; then
                     echo "$LINE" >> $T_BUILD
