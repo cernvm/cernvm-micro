@@ -1,5 +1,5 @@
 
-EXTRA_BINARIES = resolve_aufs_conflicts xattr_root_hash parse_user_data
+EXTRA_BINARIES = resolve_aufs_conflicts xattr_root_hash parse_user_data merge_accounts
 
 all: $(EXTRA_BINARIES)
 
@@ -17,3 +17,7 @@ xattr_root_hash: xattr_root_hash.c
 parse_user_data: parse_user_data.cc
 	g++ -O2 -Wall -o parse_user_data parse_user_data.cc
 	strip parse_user_data
+
+merge_accounts: merge_accounts.cc
+	g++ -O2 -Wall -o merge_accounts merge_accounts.cc
+	strip merge_accounts
