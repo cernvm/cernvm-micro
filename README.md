@@ -109,6 +109,7 @@ to unwind the AUFS file system stack instead of just unmounting all file systems
 
 The bootloader can process EC2, Openstack, and vSphere user data.  Within the
 user data everything is ignored expect a block of the form
+
     [ucernvm-begin]
     key1=value1
     key2=value2
