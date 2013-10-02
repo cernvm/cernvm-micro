@@ -9,18 +9,19 @@
 #include <cstdio>
 
 #include <vector>
+#include <map>
 #include <string>
 
 using namespace std;
 
-string g_ro_base;
-string g_rw_base;
-FILE *g_flog;
-
+// Forward declarations
 static string StringifyInt(const int64_t value);
-static vector<string> SplitString(const string &str, const char delim);
 static int64_t String2Int64(const string &value);
+static vector<string> SplitString(const string &str, const char delim);
+static string JoinStrings(const vector<string> &strings, const string &joint);
 
+
+// Structs containing db fields from passwd, shadow, group
 class AccountEntry {
   virtual string MakeEntry() = 0;
   virtual bool ReadEntry(const string &line) = 0;
@@ -93,7 +94,7 @@ struct ShadowEntry {
 struct GroupEntry {
   virtual string MakeEntry() {
     return group + ":" + password + ":" + StringifyInt(gid) + ":" +
-           member + "\n";
+           JoinStrings(members, ",") + "\n";
   }
 
   virtual bool ReadEntry(const string &line) {
@@ -103,19 +104,20 @@ struct GroupEntry {
     group = fields[0];
     password = fields[1];
     gid = String2Int64(fields[2]);
-    member = fields[3];
+    members = SplitString(fields[3], ',');
     return true;
   }
 
   string group;
   string password;
   uint64_t gid;
-  string member;
+  vector<string> members;
 };
 
 
+// Helper functions
 static void Usage(const char *exe) {
-  printf("Usage: %s <ro base> <rw base> <logfile>\n", exe);
+  printf("Usage: %s <ro base> <rw base> <uid map> <gid map> <logfile>\n", exe);
 }
 
 
@@ -163,6 +165,20 @@ static vector<string> SplitString(const string &str, const char delim) {
   return result;
 }
 
+
+static string JoinStrings(const vector<string> &strings, const string &joint) {
+  string result = "";
+  const unsigned size = strings.size();
+
+  if (size > 0) {
+    result = strings[0];
+    for (unsigned i = 1; i < size; ++i)
+      result += joint + strings[i];
+  }
+
+  return result;
+}
+
 template <class AccountEntryType>
 static bool ReadAccountFile(const string &filename,
                             vector<AccountEntryType> *entries)
@@ -206,38 +222,93 @@ static bool WriteAccountFile(const string &filename,
 }
 
 
+// Merging algorithm
 int main(int argc, char **argv) {
-  if (argc < 4) {
+  if (argc < 6) {
     Usage(argv[0]);
     return 1;
   }
 
-  g_ro_base = string(argv[1]);
-  g_rw_base = string(argv[2]);
-  g_flog = fopen(argv[3], "w");
+  string ro_base = string(argv[1]);
+  string rw_base = string(argv[2]);
+  FILE *fuidmap = fopen(argv[3], "w");
+  if (!fuidmap) return 1;
+  FILE *fgidmap = fopen(argv[4], "w");
+  if (!fgidmap) return 1;
+  FILE *flog = fopen(argv[5], "w");
+  if (!flog) return 1;
 
-  vector<PasswdEntry> ro_passwd;
-  vector<ShadowEntry> ro_shadow;
-  vector<GroupEntry> ro_group;
 
-  bool retval = ReadAccountFile<PasswdEntry>("/etc/passwd", &ro_passwd);
+  vector<PasswdEntry> upstream_passwd;
+  vector<ShadowEntry> upstream_shadow;
+  vector<GroupEntry> upstream_group;
+  vector<PasswdEntry> user_passwd;
+  vector<ShadowEntry> user_shadow;
+  vector<GroupEntry> user_group;
+  map<uint64_t, uint64_t> uid_map;
+  map<uint64_t, uint64_t> gid_map;
+  bool retval;
+
+  // Load files
+  fprintf(flog, "[INF] reading %s\n", (ro_base + "/passwd").c_str());
+  retval = ReadAccountFile<PasswdEntry>(ro_base + "/passwd", &upstream_passwd);
   if (!retval)
     return 1;
-  retval = WriteAccountFile<PasswdEntry>("test-passwd", ro_passwd);
+  fprintf(flog, "[INF] reading %s\n", (rw_base + "/passwd").c_str());
+  retval = ReadAccountFile<PasswdEntry>(rw_base + "/passwd", &user_passwd);
   if (!retval)
     return 1;
-  retval = ReadAccountFile<ShadowEntry>("/etc/shadow", &ro_shadow);
+  fprintf(flog, "[INF] reading %s\n", (ro_base + "/shadow").c_str());
+  retval = ReadAccountFile<ShadowEntry>(ro_base + "/shadow", &upstream_shadow);
   if (!retval)
     return 1;
-  retval = WriteAccountFile<ShadowEntry>("test-shadow", ro_shadow);
+  fprintf(flog, "[INF] reading %s\n", (rw_base + "/shadow").c_str());
+  retval = ReadAccountFile<ShadowEntry>(rw_base + "/shadow", &user_shadow);
   if (!retval)
     return 1;
-  retval = ReadAccountFile<GroupEntry>("/etc/group", &ro_group);
+  fprintf(flog, "[INF] reading %s\n", (ro_base + "/group").c_str());
+  retval = ReadAccountFile<GroupEntry>(ro_base + "/group", &upstream_group);
   if (!retval)
     return 1;
-  retval = WriteAccountFile<GroupEntry>("test-group", ro_group);
+  fprintf(flog, "[INF] reading %s\n", (rw_base + "/group").c_str());
+  retval = ReadAccountFile<GroupEntry>(rw_base + "/group", &user_group);
   if (!retval)
     return 1;
 
+  // Mapping user ids:
+  //   - new upstream entries are copied.
+  //   - conflicting names get uid of the user db
+  //   - conflicting uids are mapped to free ones
+  for (unsigned i = 0; i < upstream_passwd.size(); ++i) {
+    bool found_account = false;
+    string upstream_account = upstream_passwd[i].account;
+    uint64_t upstream_uid = upstream_passwd[i].uid;
+
+    for (unsigned j = 0; j < user_passwd.size(); ++j) {
+      string user_account = user_passwd[j].account;
+      uint64_t user_uid = user_passwd[j].uid;
+      if (user_account == upstream_account) {
+        found_account = true;
+        if ()
+      }
+    }
+
+    if (!found_account)
+      user_passwd.push_back(upstream_passwd[i]);
+  }
+
+  // Merge group memberships
+
+  // Merge shadow db
+
+  // Backup user databases
+
+  // Write new user databases
+
+  // Write map files
+
+  fclose(flog);
+  fclose(fuidmap);
+  fclose(fgidmap);
   return 0;
 }

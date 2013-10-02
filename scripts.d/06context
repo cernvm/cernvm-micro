@@ -87,7 +87,7 @@ download_userdata() {
 
   nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true > /dev/null 2>&1
   if [ $? -eq 0 ]; then
-    curl -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
+    curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
     if [ $? -eq 0 ]; then
       return 0
     else
