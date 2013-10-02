@@ -1,0 +1,12 @@
+root:x:0:
+bin:x:1:bin,daemon
+daemon:x:2:bin,daemon
+sys:x:3:bin,adm
+adm:x:4:adm,daemon
+tty:x:5:
+disk:x:6:
+lp:x:7:daemon
+mem:x:8:
+mail:x:12:mail,postfix
+uucp:x:14:
+momentum:x:500:

@@ -1,0 +1,16 @@
+root:x:0:
+bin:x:1:bin,daemon,root
+daemon:x:2:bin,daemon,root
+sys:x:3:bin,adm
+adm:x:4:adm,daemon
+tty:x:5:
+disk:x:6:
+lp:x:7:daemon
+mem:x:8:
+kmem:x:9:
+wheel:x:12:
+man:x:14:
+vnicolao:x:501:
+mail:x:319:mail,postfix
+uucp:x:79:
+momentum:x:500:
