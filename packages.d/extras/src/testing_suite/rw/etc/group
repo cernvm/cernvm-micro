@@ -14,3 +14,4 @@ vnicolao:x:501:
 mail:x:319:mail,postfix
 uucp:x:79:
 momentum:x:500:
+redis:x:600:

@@ -275,10 +275,100 @@ int main(int argc, char **argv) {
   if (!retval)
     return 1;
 
-  // Mapping user ids:
+  // Find highest free uid/gid
+  uint64_t next_uid = 0;
+  uint64_t next_gid = 0;
+  for (unsigned i = 0; i < user_passwd.size(); ++i) {
+    if (user_passwd[i].uid >= next_uid)
+      next_uid = user_passwd[i].uid+1;
+  }
+  for (unsigned i = 0; i < user_group.size(); ++i) {
+    if (user_group[i].gid >= next_gid)
+      next_gid = user_group[i].gid+1;
+  }
+
+  // Map group ids:
   //   - new upstream entries are copied.
   //   - conflicting names get uid of the user db
   //   - conflicting uids are mapped to free ones
+  //   - Merge members from user and upstream groups
+  //   - Update upstream passwd for mapped group ids
+  for (unsigned i = 0; i < upstream_group.size(); ++i) {
+    bool found_group = false;
+    string upstream_account = upstream_group[i].group;
+    uint64_t upstream_gid = upstream_group[i].gid;
+    uint64_t mapped_gid = upstream_gid;
+
+    for (unsigned j = 0; j < user_group.size(); ++j) {
+      string user_account = user_group[j].group;
+      uint64_t user_gid = user_group[j].gid;
+      if (user_account == upstream_account) {
+        found_group = true;
+        if (user_gid != upstream_gid) {
+          fprintf(flog, "[GROUP] mapping %s gid %"PRIu64" to existing %"PRIu64"\n",
+                  upstream_account.c_str(), upstream_gid, user_gid);
+          mapped_gid = user_gid;
+          gid_map[upstream_gid] = mapped_gid;
+        }
+
+        // Merge members
+        for (unsigned k = 0; k < upstream_group[i].members.size(); ++k) {
+          bool found_member = false;
+          for (unsigned l = 0; l < user_group[j].members.size(); ++l) {
+            if (upstream_group[i].members[k] == user_group[j].members[l]) {
+              found_member = true;
+              break;
+            }
+          }
+          if (!found_member) {
+            fprintf(flog, "[GROUP] merge %s member %s with user's group database\n",
+                    upstream_account.c_str(), upstream_group[i].members[k].c_str());
+            user_group[j].members.push_back(upstream_group[i].members[k]);
+          }
+        }
+        break;
+      }
+    }
+    if (!found_group) {
+      for (unsigned j = 0; j < user_group.size(); ++j) {
+        string user_account = user_group[j].group;
+        uint64_t user_gid = user_group[j].gid;
+        if (user_gid == upstream_gid) {
+          fprintf(flog,
+                  "[GROUP] gid conflict of %s with %s, "
+                  "mapping %"PRIu64" to %"PRIu64"\n", upstream_account.c_str(),
+                  user_account.c_str(), upstream_gid, next_gid);
+          mapped_gid = next_gid;
+          gid_map[upstream_gid] = mapped_gid;
+          upstream_group[i].gid = mapped_gid;
+          next_gid++;
+          break;
+        }
+      }
+    }
+
+    if (!found_group) {
+      fprintf(flog, "[GROUP] copy group %s from upstream database\n",
+              upstream_account.c_str());
+      user_group.push_back(upstream_group[i]);
+    }
+
+    if (mapped_gid != upstream_gid) {
+      for (unsigned j = 0; j < upstream_passwd.size(); ++j) {
+        if (upstream_passwd[j].gid == upstream_gid) {
+          fprintf(flog, "[PASSWD] turn gid %"PRIu64" of user %s into %"PRIu64"\n",
+                  upstream_passwd[j].gid, upstream_passwd[j].account.c_str(),
+                  mapped_gid);
+          upstream_passwd[j].gid = mapped_gid;
+        }
+      }
+    }
+  }
+
+  // Map user ids:
+  //   - new upstream entries are copied.
+  //   - conflicting names get gid of the user db
+  //   - conflicting gids are mapped to free ones
   for (unsigned i = 0; i < upstream_passwd.size(); ++i) {
     bool found_account = false;
     string upstream_account = upstream_passwd[i].account;
@@ -289,26 +379,90 @@ int main(int argc, char **argv) {
       uint64_t user_uid = user_passwd[j].uid;
       if (user_account == upstream_account) {
         found_account = true;
-        if ()
+        if (user_uid != upstream_uid) {
+          fprintf(flog, "[PASSWD] mapping %s uid %"PRIu64" to existing %"PRIu64"\n",
+                  upstream_account.c_str(), upstream_uid, user_uid);
+          uid_map[upstream_uid] = user_uid;
+        }
+        break;
+      }
+    }
+    if (!found_account) {
+      for (unsigned j = 0; j < user_passwd.size(); ++j) {
+        string user_account = user_passwd[j].account;
+        uint64_t user_uid = user_passwd[j].uid;
+        if (user_uid == upstream_uid) {
+          fprintf(flog,
+                  "[PASSWD] uid conflict of %s with %s, "
+                  "mapping %"PRIu64" to %"PRIu64"\n", upstream_account.c_str(),
+                  user_account.c_str(), upstream_uid, next_uid);
+          uid_map[upstream_uid] = next_uid;
+          upstream_passwd[i].uid = next_uid;
+          next_uid++;
+          break;
+        }
       }
     }
 
-    if (!found_account)
+    if (!found_account) {
+      fprintf(flog, "[PASSWD] copy user %s from upstream database\n",
+              upstream_account.c_str());
       user_passwd.push_back(upstream_passwd[i]);
+    }
   }
 
-  // Merge group memberships
 
   // Merge shadow db
-
-  // Backup user databases
+  // only copy new entries from upstream
+  for (unsigned i = 0; i < upstream_shadow.size(); ++i) {
+    bool found_account = false;
+    string upstream_account = upstream_shadow[i].account;
+    for (unsigned j = 0; j < user_shadow.size(); ++j) {
+      string user_account = user_shadow[j].account;
+      if (user_account == upstream_account) {
+        found_account = true;
+        break;
+      }
+    }
+    if (!found_account) {
+      fprintf(flog, "[SHADOW] copy shadow entry %s from upstream database\n",
+              upstream_account.c_str());
+      user_shadow.push_back(upstream_shadow[i]);
+    }
+  }
 
   // Write new user databases
+  fprintf(flog, "[INF] writing %s\n", (rw_base + "/passwd.merged").c_str());
+  retval = WriteAccountFile<PasswdEntry>(rw_base + "/passwd.merged", user_passwd);
+  if (!retval)
+    return 1;
+  fprintf(flog, "[INF] writing %s\n", (rw_base + "/group.merged").c_str());
+  retval = WriteAccountFile<GroupEntry>(rw_base + "/group.merged", user_group);
+  if (!retval)
+    return 1;
+  fprintf(flog, "[INF] writing %s\n", (rw_base + "/shadow.merged").c_str());
+  retval = WriteAccountFile<ShadowEntry>(rw_base + "/shadow.merged", user_shadow);
+  if (!retval)
+    return 1;
+
 
   // Write map files
+  fprintf(flog, "[INF] writing uid map\n");
+  for (map<uint64_t, uint64_t>::const_iterator i = uid_map.begin();
+       i != uid_map.end(); ++i)
+  {
+    fprintf(fuidmap, "%"PRIu64" %"PRIu64"\n", i->first, i->second);
+  }
+  fclose(fuidmap);
+
+  fprintf(flog, "[INF] writing gid map\n");
+  for (map<uint64_t, uint64_t>::const_iterator i = gid_map.begin();
+       i != gid_map.end(); ++i)
+  {
+    fprintf(fgidmap, "%"PRIu64" %"PRIu64"\n", i->first, i->second);
+  }
+  fclose(fgidmap);
 
   fclose(flog);
-  fclose(fuidmap);
-  fclose(fgidmap);
   return 0;
 }

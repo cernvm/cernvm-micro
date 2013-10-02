@@ -7,6 +7,8 @@ tty:x:5:
 disk:x:6:
 lp:x:7:daemon
 mem:x:8:
-mail:x:12:mail,postfix
+mail:x:12:mail,postfix,adm
 uucp:x:14:
 momentum:x:500:
+new_group:x:501:
+redis:x:599:
