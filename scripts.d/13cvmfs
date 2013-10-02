@@ -22,7 +22,7 @@ log_start "Starting CernVM File System..."
 # Setup cvmfs options
 CVMFS_SERVER="hepvm.cern.ch"
 CVMFS_REPOS="cernvm-devel.cern.ch"
-CVMFS_PROXY="DIRECT"
+CVMFS_PROXY="\"auto;DIRECT\""
 CVMFS_URL=""
 CVMFS_KEY=""
 CERNVM_ARCH=$(uname -m)
