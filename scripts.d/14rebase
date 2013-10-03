@@ -12,12 +12,49 @@
 
 if [ $CVMFS_FRESH -eq 1 ]; then
   if [ $(ls -lah "$AUFS_RW" 2>/dev/null | wc -l) -ne 3 ]; then
+    REBASE_ID=$(date -u -Iseconds)    
+
     log_start "Rebasing system to new version "
-    resolve_aufs_conflicts "$AUFS_RO" "$AUFS_RW" ${ROOT_RW}/aux/rebase-${CVMFS_ROOT_HASH}.log
+    resolve_aufs_conflicts "$AUFS_RO" "$AUFS_RW" ${ROOT_RW}/aux/rebase-${REBASE_ID}.log
+    echo "Rebased to ${CVMFS_ROOT_HASH}" >> ${ROOT_RW}/aux/rebase-${REBASE_ID}.log
     log_ok
 
-    #log_start "Merging account database"
-    #/bin/account-merge.sh /etc/account-merge.conf
-    #log_ok
+    log_start "Merging account databases"
+    # Defined state
+    mkdir -p ${AUFS_RW}/etc
+    for f in "/etc/passwd" "/etc/group" "/etc/shadow" "/etc/gshadow"
+    do
+      if [ ! -f "${AUFS_RW}${f}" ]; then
+        cp "${AUFS_RO}${f}" "${AUFS_RW}${f}" 
+      fi
+    done
+
+    # Backup
+    for f in \
+      "${ROOT_RW}/aux/uid_map" \
+      "${ROOT_RW}/aux/gid_map" \
+      "${AUFS_RW}/etc/passwd" \
+      "${AUFS_RW}/etc/group" \
+      "${AUFS_RW}/etc/shadow" \
+      "${AUFS_RW}/etc/gshadow"
+    do
+      cp "$f" "${f}.backup.${REBASE_ID}"
+    done
+
+    # Merge
+    merge_accounts "${AUFS_RO}/etc" "${AUFS_RW}/etc" \
+      "${ROOT_RW}/aux/uid_map" "${ROOT_RW}/aux/gid_map" \
+      ${ROOT_RW}/aux/account_merge-${REBASE_ID}.log    
+    for f in "${AUFS_RW}/etc/passwd" "${AUFS_RW}/etc/group" "${AUFS_RW}/etc/shadow" "${AUFS_RW}/etc/gshadow"
+    do
+      mv "${f}.merged" "$f"
+    done
+    chmod 400 "${AUFS_RW}/etc/shadow" "${AUFS_RW}/etc/gshadow"
+
+    # Remount
+    umount ${ROOT_RO}
+    mount_cvmfs    
+    [ $? -ne 0 ] && panic "Unable to re-mount cvmfs root filesystem!"
+    log_ok 
   fi
 fi

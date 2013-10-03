@@ -1,6 +1,8 @@
 // Merges /etc/passwd, /etc/shadow, and /etc/group from new cernvm ro branch
 // with local modifications on the rw branch.
 
+// TODO: proper set data structures for users and groups
+
 #define _FILE_OFFSET_BITS 64
 #define __STDC_FORMAT_MACROS
 
@@ -58,7 +60,7 @@ class PasswdEntry : public AccountEntry {
   string shell;
 };
 
-struct ShadowEntry {
+struct ShadowEntry : public AccountEntry {
   virtual string MakeEntry() {
     return account + ":" + password + ":" + last_change + ":" + min_age + ":" +
            max_age + ":" + warn_period + ":" + inactivity_period + ":" +
@@ -91,7 +93,7 @@ struct ShadowEntry {
   string reserved;
 };
 
-struct GroupEntry {
+struct GroupEntry : public AccountEntry {
   virtual string MakeEntry() {
     return group + ":" + password + ":" + StringifyInt(gid) + ":" +
            JoinStrings(members, ",") + "\n";
@@ -111,6 +113,29 @@ struct GroupEntry {
   string group;
   string password;
   uint64_t gid;
+  vector<string> members;
+};
+
+struct GShadowEntry : public AccountEntry {
+  virtual string MakeEntry() {
+    return group + ":" + password + ":" + JoinStrings(administrators, ",") +
+           ":" + JoinStrings(members, ",") + "\n";
+  }
+
+  virtual bool ReadEntry(const string &line) {
+    vector<string> fields = SplitString(line, ':');
+    if (fields.size() != 4)
+      return false;
+    group = fields[0];
+    password = fields[1];
+    administrators = SplitString(fields[2], ',');
+    members = SplitString(fields[3], ',');
+    return true;
+  }
+
+  string group;
+  string password;
+  vector<string> administrators;
   vector<string> members;
 };
 
@@ -162,6 +187,8 @@ static vector<string> SplitString(const string &str, const char delim) {
   }
 
   result.push_back(str.substr(marker));
+  if ((result.size() == 1) && (result[0].empty()))
+    result.pop_back();
   return result;
 }
 
@@ -242,9 +269,11 @@ int main(int argc, char **argv) {
   vector<PasswdEntry> upstream_passwd;
   vector<ShadowEntry> upstream_shadow;
   vector<GroupEntry> upstream_group;
+  vector<GShadowEntry> upstream_gshadow;
   vector<PasswdEntry> user_passwd;
   vector<ShadowEntry> user_shadow;
   vector<GroupEntry> user_group;
+  vector<GShadowEntry> user_gshadow;
   map<uint64_t, uint64_t> uid_map;
   map<uint64_t, uint64_t> gid_map;
   bool retval;
@@ -274,6 +303,14 @@ int main(int argc, char **argv) {
   retval = ReadAccountFile<GroupEntry>(rw_base + "/group", &user_group);
   if (!retval)
     return 1;
+  fprintf(flog, "[INF] reading %s\n", (ro_base + "/gshadow").c_str());
+  retval = ReadAccountFile<GShadowEntry>(ro_base + "/gshadow", &upstream_gshadow);
+  if (!retval)
+    return 1;
+  fprintf(flog, "[INF] reading %s\n", (rw_base + "/gshadow").c_str());
+  retval = ReadAccountFile<GShadowEntry>(rw_base + "/gshadow", &user_gshadow);
+  if (!retval)
+    return 1;
 
   // Find highest free uid/gid
   uint64_t next_uid = 0;
@@ -292,6 +329,7 @@ int main(int argc, char **argv) {
   //   - conflicting names get uid of the user db
   //   - conflicting uids are mapped to free ones
   //   - Merge members from user and upstream groups
+  //   - Merge members in gshadow as well
   //   - Update upstream passwd for mapped group ids
   for (unsigned i = 0; i < upstream_group.size(); ++i) {
     bool found_group = false;
@@ -329,6 +367,29 @@ int main(int argc, char **argv) {
         break;
       }
     }
+
+    // Merge gshadow members
+    for (unsigned j = 0; j < user_gshadow.size(); ++j) {
+      string user_account = user_gshadow[j].group;
+      if (user_account == upstream_account) {
+        for (unsigned k = 0; k < upstream_group[i].members.size(); ++k) {
+          bool found_member = false;
+          for (unsigned l = 0; l < user_gshadow[j].members.size(); ++l) {
+            if (upstream_group[i].members[k] == user_gshadow[j].members[l]) {
+              found_member = true;
+              break;
+            }
+          }
+          if (!found_member) {
+            fprintf(flog, "[GSHADOW] merge %s member %s with user's gshadow database\n",
+                    upstream_account.c_str(), upstream_group[i].members[k].c_str());
+            user_gshadow[j].members.push_back(upstream_group[i].members[k]);
+          }
+        }
+        break;
+      }
+    }
+
     if (!found_group) {
       for (unsigned j = 0; j < user_group.size(); ++j) {
         string user_account = user_group[j].group;
@@ -431,6 +492,25 @@ int main(int argc, char **argv) {
     }
   }
 
+  // Merge gshadow db
+  //  - copy new entries from upstream
+  for (unsigned i = 0; i < upstream_gshadow.size(); ++i) {
+    bool found_account = false;
+    string upstream_account = upstream_gshadow[i].group;
+    for (unsigned j = 0; j < user_gshadow.size(); ++j) {
+      string user_account = user_gshadow[j].group;
+      if (user_account == upstream_account) {
+        found_account = true;
+        break;
+      }
+    }
+    if (!found_account) {
+      fprintf(flog, "[GSHADOW] copy gshadow entry %s from upstream database\n",
+              upstream_account.c_str());
+      user_gshadow.push_back(upstream_gshadow[i]);
+    }
+  }
+
   // Write new user databases
   fprintf(flog, "[INF] writing %s\n", (rw_base + "/passwd.merged").c_str());
   retval = WriteAccountFile<PasswdEntry>(rw_base + "/passwd.merged", user_passwd);
@@ -442,6 +522,10 @@ int main(int argc, char **argv) {
     return 1;
   fprintf(flog, "[INF] writing %s\n", (rw_base + "/shadow.merged").c_str());
   retval = WriteAccountFile<ShadowEntry>(rw_base + "/shadow.merged", user_shadow);
+  if (!retval)
+    return 1;
+  fprintf(flog, "[INF] writing %s\n", (rw_base + "/gshadow.merged").c_str());
+  retval = WriteAccountFile<GShadowEntry>(rw_base + "/gshadow.merged", user_gshadow);
   if (!retval)
     return 1;
 

@@ -106,12 +106,18 @@ CVMFS_USYSLOG=${CVMFS_CACHE}/usyslog
 CVMFS_UID_MAP=${ROOT_RW}/aux/uid_map
 CVMFS_GID_MAP=${ROOT_RW}/aux/gid_map
 EOF
+touch ${ROOT_RW}/aux/uid_map ${ROOT_RW}/aux/gid_map
 
 [ x"$CVMFS_REPOSITORY_TAG" != "x" ] && echo "CVMFS_REPOSITORY_TAG=${CVMFS_REPOSITORY_TAG}" >> /etc/cvmfs/config.d/${CVMFS_REPOS}.conf
 [ x"$CVMFS_ROOT_HASH" != "x" ] && echo "CVMFS_ROOT_HASH=${CVMFS_ROOT_HASH}" >> /etc/cvmfs/config.d/${CVMFS_REPOS}.conf 
 
-cvmfs2 -o allow_other,config=/etc/cvmfs/config.d/${CVMFS_REPOS}.conf,cvmfs_suid ${CVMFS_REPOS} ${ROOT_RO} 2>/dev/null >/dev/null
-#cvmfs2 -d -f -o allow_other,config=/etc/cvmfs/config.d/${CVMFS_REPOS}.conf,cvmfs_suid ${CVMFS_REPOS} ${ROOT_RO}
+mount_cvmfs() {
+  cvmfs2 -o allow_other,config=/etc/cvmfs/config.d/${CVMFS_REPOS}.conf,cvmfs_suid ${CVMFS_REPOS} ${ROOT_RO} 2>/dev/null >/dev/null
+  #cvmfs2 -d -f -o allow_other,config=/etc/cvmfs/config.d/${CVMFS_REPOS}.conf,cvmfs_suid ${CVMFS_REPOS} ${ROOT_RO}
+  return $?
+}
+
+mount_cvmfs
 [ $? -ne 0 ] && panic "Unable to mount cvmfs root filesystem!"
 
 NAMESERVER=$(cat /etc/resolv.conf | grep ^nameserver | head -n1 | awk '{print $2}')
