@@ -116,8 +116,8 @@ mount_cvmfs() {
   #cvmfs2 -d -f -o allow_other,config=/etc/cvmfs/config.d/${CVMFS_REPOS}.conf,cvmfs_suid ${CVMFS_REPOS} ${ROOT_RO}
   local retval=$?
   local nameserver=$(cat /etc/resolv.conf | grep ^nameserver | head -n1 | awk '{print $2}')
-  echo -n "nameserver set ${nameserver}" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS}
-  echo -n "host probe" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS}
+  echo -n "nameserver set ${nameserver}" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
+  echo -n "host probe" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
   return $retval
 }
 
