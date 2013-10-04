@@ -114,14 +114,15 @@ touch ${ROOT_RW}/aux/uid_map ${ROOT_RW}/aux/gid_map
 mount_cvmfs() {
   cvmfs2 -o allow_other,config=/etc/cvmfs/config.d/${CVMFS_REPOS}.conf,cvmfs_suid ${CVMFS_REPOS} ${ROOT_RO} 2>/dev/null >/dev/null
   #cvmfs2 -d -f -o allow_other,config=/etc/cvmfs/config.d/${CVMFS_REPOS}.conf,cvmfs_suid ${CVMFS_REPOS} ${ROOT_RO}
-  return $?
+  local retval=$?
+  local nameserver=$(cat /etc/resolv.conf | grep ^nameserver | head -n1 | awk '{print $2}')
+  echo -n "nameserver set $NAMESERVER" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS}
+  echo -n "host probe" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS}
+  return $retval
 }
 
 mount_cvmfs
 [ $? -ne 0 ] && panic "Unable to mount cvmfs root filesystem!"
-
-NAMESERVER=$(cat /etc/resolv.conf | grep ^nameserver | head -n1 | awk '{print $2}')
-echo -n "nameserver set $NAMESERVER" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
 
 # Export key
 cp ${CVMFS_KEY} ${ROOT_RW}/aux/cvmfskey.pub
