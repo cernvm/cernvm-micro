@@ -19,7 +19,7 @@ if [ $CVMFS_FRESH -eq 1 ]; then
     echo "Rebased to ${CVMFS_ROOT_HASH}" >> ${ROOT_RW}/aux/rebase-${REBASE_ID}.log
     log_ok
 
-    log_start "Merging account databases"
+    log_start "Merging account databases..."
     # Defined state
     mkdir -p ${AUFS_RW}/etc
     for f in "/etc/passwd" "/etc/group" "/etc/shadow" "/etc/gshadow"
