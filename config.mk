@@ -20,7 +20,7 @@ EXTRAS_VERSION = 0.3
 CERNVM_INCREASE_RELEASE = 0
 
 CERNVM_SYSTEM = HEAD
-CERNVM_BRANCHES = prod eplanet testing devel
+CERNVM_BRANCHES = testing devel
 IMAGE_FORMATS = iso hdd fat
 
 # Set to one of CERNVM_BRANCHES by main Makefile
