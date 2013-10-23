@@ -25,7 +25,9 @@ if [ $CVMFS_FRESH -eq 1 ]; then
     for f in "/etc/passwd" "/etc/group" "/etc/shadow" "/etc/gshadow"
     do
       if [ ! -f "${AUFS_RW}${f}" ]; then
-        cp "${AUFS_RO}${f}" "${AUFS_RW}${f}" 
+        if [ -f "${AUFS_RO}${f}" ]; then
+          cp "${AUFS_RO}${f}" "${AUFS_RW}${f}" 
+        fi
       fi
     done
 

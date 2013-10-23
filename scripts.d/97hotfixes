@@ -8,7 +8,7 @@
 
 # Change some critical permissions
 chmod 1777 ${ROOT}/tmp
-chmod 4555 ${ROOT}/usr/bin/sudo
+[ -f "${ROOT}/usr/bin/sudo" ] && chmod 4555 "${ROOT}/usr/bin/sudo"
 
 # Create some missing folders
 [ ! -d ${ROOT}/cvmfs ] && mkdir ${ROOT}/cvmfs
