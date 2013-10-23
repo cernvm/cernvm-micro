@@ -7,6 +7,7 @@
 #define __STDC_FORMAT_MACROS
 
 #include <inttypes.h>
+#include <sys/stat.h>
 
 #include <cstdio>
 
@@ -206,6 +207,12 @@ static string JoinStrings(const vector<string> &strings, const string &joint) {
   return result;
 }
 
+static bool FileExists(const string &path) {
+  struct stat64 info;
+  return ((lstat64(path.c_str(), &info) == 0) &&
+         S_ISREG(info.st_mode));
+}
+
 template <class AccountEntryType>
 static bool ReadAccountFile(const string &filename,
                             vector<AccountEntryType> *entries)
@@ -287,14 +294,18 @@ int main(int argc, char **argv) {
   retval = ReadAccountFile<PasswdEntry>(rw_base + "/passwd", &user_passwd);
   if (!retval)
     return 1;
-  fprintf(flog, "[INF] reading %s\n", (ro_base + "/shadow").c_str());
-  retval = ReadAccountFile<ShadowEntry>(ro_base + "/shadow", &upstream_shadow);
-  if (!retval)
-    return 1;
-  fprintf(flog, "[INF] reading %s\n", (rw_base + "/shadow").c_str());
-  retval = ReadAccountFile<ShadowEntry>(rw_base + "/shadow", &user_shadow);
-  if (!retval)
-    return 1;
+  if (FileExists(ro_base + "/shadow")) {
+    fprintf(flog, "[INF] reading %s\n", (ro_base + "/shadow").c_str());
+    retval = ReadAccountFile<ShadowEntry>(ro_base + "/shadow", &upstream_shadow);
+    if (!retval)
+      return 1;
+  }
+  if (FileExists(rw_base + "/shadow")) {
+    fprintf(flog, "[INF] reading %s\n", (rw_base + "/shadow").c_str());
+    retval = ReadAccountFile<ShadowEntry>(rw_base + "/shadow", &user_shadow);
+    if (!retval)
+      return 1;
+  }
   fprintf(flog, "[INF] reading %s\n", (ro_base + "/group").c_str());
   retval = ReadAccountFile<GroupEntry>(ro_base + "/group", &upstream_group);
   if (!retval)
@@ -303,14 +314,18 @@ int main(int argc, char **argv) {
   retval = ReadAccountFile<GroupEntry>(rw_base + "/group", &user_group);
   if (!retval)
     return 1;
-  fprintf(flog, "[INF] reading %s\n", (ro_base + "/gshadow").c_str());
-  retval = ReadAccountFile<GShadowEntry>(ro_base + "/gshadow", &upstream_gshadow);
-  if (!retval)
-    return 1;
-  fprintf(flog, "[INF] reading %s\n", (rw_base + "/gshadow").c_str());
-  retval = ReadAccountFile<GShadowEntry>(rw_base + "/gshadow", &user_gshadow);
-  if (!retval)
-    return 1;
+  if (FileExists(ro_base + "/gshadow")) {
+    fprintf(flog, "[INF] reading %s\n", (ro_base + "/gshadow").c_str());
+    retval = ReadAccountFile<GShadowEntry>(ro_base + "/gshadow", &upstream_gshadow);
+    if (!retval)
+      return 1;
+  }
+  if (FileExists(rw_base + "/gshadow")) {
+    fprintf(flog, "[INF] reading %s\n", (rw_base + "/gshadow").c_str());
+    retval = ReadAccountFile<GShadowEntry>(rw_base + "/gshadow", &user_gshadow);
+    if (!retval)
+      return 1;
+  }
 
   // Find highest free uid/gid
   uint64_t next_uid = 0;
@@ -520,15 +535,18 @@ int main(int argc, char **argv) {
   retval = WriteAccountFile<GroupEntry>(rw_base + "/group.merged", user_group);
   if (!retval)
     return 1;
-  fprintf(flog, "[INF] writing %s\n", (rw_base + "/shadow.merged").c_str());
-  retval = WriteAccountFile<ShadowEntry>(rw_base + "/shadow.merged", user_shadow);
-  if (!retval)
-    return 1;
-  fprintf(flog, "[INF] writing %s\n", (rw_base + "/gshadow.merged").c_str());
-  retval = WriteAccountFile<GShadowEntry>(rw_base + "/gshadow.merged", user_gshadow);
-  if (!retval)
-    return 1;
-
+  if (FileExists(ro_base + "/shadow")) { 
+    fprintf(flog, "[INF] writing %s\n", (rw_base + "/shadow.merged").c_str());
+    retval = WriteAccountFile<ShadowEntry>(rw_base + "/shadow.merged", user_shadow);
+    if (!retval)
+      return 1;
+  }
+  if (FileExists(rw_base + "/gshadow")) {
+    fprintf(flog, "[INF] writing %s\n", (rw_base + "/gshadow.merged").c_str());
+    retval = WriteAccountFile<GShadowEntry>(rw_base + "/gshadow.merged", user_gshadow);
+    if (!retval)
+      return 1;
+  }
 
   // Write map files
   fprintf(flog, "[INF] writing uid map\n");

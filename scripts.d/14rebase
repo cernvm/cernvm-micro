@@ -38,7 +38,9 @@ if [ $CVMFS_FRESH -eq 1 ]; then
       "${AUFS_RW}/etc/shadow" \
       "${AUFS_RW}/etc/gshadow"
     do
-      cp "$f" "${f}.backup.${REBASE_ID}"
+      if [ -f "$f" ]; then
+        cp "$f" "${f}.backup.${REBASE_ID}"
+      fi
     done
 
     # Merge
@@ -47,9 +49,12 @@ if [ $CVMFS_FRESH -eq 1 ]; then
       ${ROOT_RW}/aux/account_merge-${REBASE_ID}.log    
     for f in "${AUFS_RW}/etc/passwd" "${AUFS_RW}/etc/group" "${AUFS_RW}/etc/shadow" "${AUFS_RW}/etc/gshadow"
     do
-      mv "${f}.merged" "$f"
+      if [ -f "$f" ]; then
+        mv "${f}.merged" "$f"
+      fi
     done
-    chmod 400 "${AUFS_RW}/etc/shadow" "${AUFS_RW}/etc/gshadow"
+    [ -f "${AUFS_RW}/etc/shadow" ] && chmod 400 "${AUFS_RW}/etc/shadow" 
+    [ -f "${AUFS_RW}/etc/gshadow" ] && chmod 400 "${AUFS_RW}/etc/gshadow"
 
     # Remount
     umount ${ROOT_RO}
