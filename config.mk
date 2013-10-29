@@ -21,7 +21,7 @@ CERNVM_INCREASE_RELEASE = 0
 
 CERNVM_SYSTEM = HEAD
 CERNVM_BRANCHES = testing devel slc4
-IMAGE_FORMATS = iso hdd fat
+IMAGE_FORMATS = iso hdd fat vhd
 
 # Set to one of CERNVM_BRANCHES by main Makefile
 CERNVM_BRANCH =

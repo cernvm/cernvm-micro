@@ -101,6 +101,9 @@ $(IMAGE_DIR)/$(IMAGE_NAME).hdd: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTR
 	losetup -d /dev/loop5
 	syslinux --stupid  --offset 512 --mbr --active --directory /isolinux tmp/$(IMAGE_NAME).hdd
 	mv tmp/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd
+
+$(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
+	qemu-img convert -O vpc $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).vhd
 			
 $(IMAGE_DIR)/$(IMAGE_NAME).fat: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/version
 	rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
