@@ -12,8 +12,6 @@ require_package udhcpc
 # Logging
 log_start "Starting networking..."
 
-panic "debug"
-
 # Bringing up network devices
 DEVICES=$(ifconfig -a | grep '^[a-z]' | awk '{ print $1 }')
 for DEV in $DEVICES; do
