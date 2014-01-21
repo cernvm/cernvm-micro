@@ -84,6 +84,7 @@ fetch_rhevm() {
 download_userdata() {
   local server=$1
   local url=$2
+  local meta_url=$3
 
   nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true > /dev/null 2>&1
   if [ $? -eq 0 ]; then
@@ -93,6 +94,17 @@ download_userdata() {
     else
       rm -f ${USER_DATA}
     fi
+
+    # Check if there are meta-data but no user data
+    if [ "x$meta_url" != "x" ]; then
+      curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
+      if [ $? -eq 0 ]; then
+        cat /dev/null > ${USER_DATA}
+        return 0
+      else
+        rm -f ${USER_DATA}
+      fi
+    fi
   fi
   
   # Failure
@@ -100,7 +112,9 @@ download_userdata() {
 }
 
 fetch_ec2() {
-  download_userdata 169.254.169.254 http://169.254.169.254/2009-04-04/user-data
+  download_userdata 169.254.169.254 \
+    http://169.254.169.254/2009-04-04/user-data \
+    http://169.254.169.254/2009-04-04/meta-data/ami-id
   [ $? -eq 0 ] && UCONTEXT_SRC="EC2"
 }
 
