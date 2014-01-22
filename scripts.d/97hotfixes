@@ -20,5 +20,11 @@ if [ ! -d ${ROOT}/lib/modules/$(uname -r) ]; then
   log_ok
 fi
 
+# Inject extra user data
+if [ -f "${EXTRA_USER_DATA}" ]; then
+  mkdir -p "${ROOT}$(dirname ${EXTRA_USER_DATA_INJECTED})"
+  mv "${EXTRA_USER_DATA}" "${ROOT}${EXTRA_USER_DATA_INJECTED}"
+fi
+
 # Run bootstrap script provided by the repository
 [ -f ${ROOT}/.ucernvm_bootstrap ] && . ${ROOT}/.ucernvm_bootstrap $ROOT

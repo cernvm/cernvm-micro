@@ -1,0 +1,44 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+#===========================
+#FOR:RUN
+#===========================
+
+EXTRA_USER_DATA_INJECTED=/cernvm/extra-user-data
+EXTRA_USER_DATA=/extra-user-data
+EXTRA_UCONTEXT_TMP=/extra-ucontext
+EXTRA_UCONTEXT_SRC=
+
+if [ ! -b "${ROOT_DEV}" ]; then
+  log_start "Looking for extra context..."
+  mkdir -p /extra_context_mount
+  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}'); do
+    mount -o ro /dev/$P /extra_context_mount >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      if [ -f "/extra_context_mount${EXTRA_USER_DATA_INJECTED}" ]; then 
+        cat /extra_context_mount${EXTRA_USER_DATA_INJECTED} >> ${EXTRA_USER_DATA}
+        if [ "x$EXTRA_UCONTEXT_SRC" = "x" ]; then
+          EXTRA_UCONTEXT_SRC="/dev/${P}"
+        else
+          EXTRA_UCONTEXT_SRC="${EXTRA_UCONTEXT_SRC} /dev/${P}"
+        fi
+      fi
+      umount /extra_context_mount
+    fi
+  done
+  rmdir /extra_context_mount
+
+  if [ -f ${EXTRA_USER_DATA} ]; then
+    cat ${EXTRA_USER_DATA} | parse_user_data > ${EXTRA_UCONTEXT_TMP}
+    . ${EXTRA_UCONTEXT_TMP}
+  fi
+
+  if [ "x$EXTRA_UCONTEXT_SRC" = "x" ]; then
+    EXTRA_UCONTEXT_SRC="(none)"
+  fi
+  log_info "${EXTRA_UCONTEXT_SRC}"
+fi
+

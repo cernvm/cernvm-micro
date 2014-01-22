@@ -8,11 +8,19 @@
 #===========================
 
 UCONTEXT=${ROOT_RW}/context/ucontext
+EXTRA_UCONTEXT=${ROOT_RW}/context/extra-ucontext
 
 if [ -f ${UCONTEXT_TMP} ]; then
   mkdir -p ${ROOT_RW}/context
   mv ${UCONTEXT_TMP} ${UCONTEXT}
 fi
 
+if [ -f ${EXTRA_UCONTEXT_TMP} ]; then
+  mkdir -p ${ROOT_RW}/context
+  mv ${EXTRA_UCONTEXT_TMP} ${EXTRA_UCONTEXT}
+fi
+
+
 [ -f ${UCONTEXT} ] && . ${UCONTEXT}
+[ -f ${EXTRA_UCONTEXT} ] && . ${EXTRA_UCONTEXT}
 
