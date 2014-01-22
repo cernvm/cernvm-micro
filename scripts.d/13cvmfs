@@ -135,7 +135,10 @@ mount_cvmfs() {
   local retval=$?
   local nameserver=$(cat /etc/resolv.conf | grep ^nameserver | head -n1 | awk '{print $2}')
   echo -n "nameserver set ${nameserver}" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
-  echo -n "host probe" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
+  local active_proxy=$(xattr ${ROOT_RO} user.proxy)
+  if [ "x$active_proxy" = "xDIRECT" ]; then
+    echo -n "host probe" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
+  fi
   return $retval
 }
 
@@ -147,7 +150,7 @@ cp ${CVMFS_KEY} ${ROOT_RW}/aux/cvmfskey.pub
 
 if [ $CVMFS_FRESH -eq 1 ]; then
   # TODO xattr from busybox
-  CVMFS_ROOT_HASH=$(xattr_root_hash ${ROOT_RO})
+  CVMFS_ROOT_HASH=$(xattr ${ROOT_RO} user.root_hash)
   echo $CVMFS_ROOT_HASH > ${ROOT_RW}/aux/cvmfs_snapshot
   echo $CVMFS_REPOSITORY_TAG >> ${ROOT_RW}/aux/cvmfs_snapshot
 fi
