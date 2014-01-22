@@ -124,3 +124,17 @@ The following key-value pairs are recognized:
 |cvmfs_http_proxy | HTTP proxy in CernVM-FS notation  |                                                  |
 |cvmfs_branch     | The repository name               | The url is currently fixed to hepvm.cern.ch      |
 |cvmfs_tag        | The snapshot name                 | For long-term data preservation                  |
+
+
+### Extra User Data
+
+In addition to the usual way to deliver user data to a VM, CernVM supports "extra user data".  Extra user
+data is injected into the image.  µCernVM will look through all partitions if it finds a file
+/cernvm/extra-user-data, in which case the content of the file is appended to the extra user data.
+The complete extra user data is parsed by the µCernVM bootloader and put into /cernvm/extra-user-data
+of the mounted OS repository.
+
+The complete extra user data should be valid user data of its own but also work when appended to the
+normal user data.
+
+
