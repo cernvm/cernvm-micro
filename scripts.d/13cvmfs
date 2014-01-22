@@ -68,7 +68,17 @@ done
 [ "x$_UCONTEXT_CVMFS_TAG" != "x" ] && CVMFS_REPOSITORY_TAG="$_UCONTEXT_CVMFS_TAG"
 
 # Build path and URL
-[ -z "$CVMFS_URL" ] && CVMFS_URL="http://${CVMFS_SERVER}/cvmfs/${CVMFS_REPOS}"
+if [ -z "$CVMFS_URL" ]; then
+  for this_server in $(echo "$CVMFS_SERVER" | tr , " "); do
+    this_url=http://${this_server}/cvmfs/${CVMFS_REPOS}
+    if [ -z "$CVMFS_URL" ]; then
+      CVMFS_URL="\"${this_url}"
+    else
+      CVMFS_URL="${CVMFS_URL};${this_url}"
+    fi
+  done
+  CVMFS_URL="${CVMFS_URL}\""
+fi
 [ -z "$CVMFS_KEY" ] && CVMFS_KEY="/etc/cvmfs/keys/${CVMFS_REPOS}.pub"
 
 # Prepare cache dir
