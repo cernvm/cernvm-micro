@@ -9,6 +9,9 @@ require_versioned_package e2fsprogs ${E2FSPROGS_STRONG_VERSION}
 # Require disk partitioning tools
 require_versioned_package sfdisk ${SFDISK_STRONG_VERSION}
 
+# AUFS consistency check
+require_package auchk
+
 #===========================
 #FOR:RUN
 #===========================
@@ -74,10 +77,10 @@ if [ ! -b "${ROOT_DEV}" ]; then
 
     # Create ext3 filesystem on the disk
     log_start "Formatting /dev/${FIRST_EMPTY_PARTITION}..."
-    mke2fs -j -L UROOT /dev/${FIRST_EMPTY_PARTITION} >/dev/null 2>/dev/null
-    [ $? -ne 0 ] && panic "Unable to create ext3 filesystem in /dev/${FIRST_EMPTY_PARTITION}"
-    tune2fs -c0 -i0 /dev/${FIRST_EMPTY_PARTITION} >/dev/null 2>/dev/null
-    [ $? -ne 0 ] && panic "Unable to create ext3 filesystem in /dev/${FIRST_EMPTY_PARTITION}"
+    /sbin/mke2fs -t ext4 -j -L UROOT /dev/${FIRST_EMPTY_PARTITION} >/var/log/partition.log 2>&1 
+    [ $? -ne 0 ] && panic "Unable to create ext4 filesystem in /dev/${FIRST_EMPTY_PARTITION}"
+    /sbin/tune2fs -O has_journal -o journal_data -c0 -i0 /dev/${FIRST_EMPTY_PARTITION} >/dev/null 2>/dev/null
+    [ $? -ne 0 ] && panic "Unable to tune ext4 filesystem in /dev/${FIRST_EMPTY_PARTITION}"
     sync_block
     log_ok
 
@@ -86,10 +89,10 @@ fi
 
 log_start "Mounting root filesystem..."
 
-/sbin/e2fsck -p "${ROOT_DEV}" 2>&1 | grep -v ext2fs_check_if_mount | grep -v "UROOT: clean"
+/sbin/e2fsck -p "${ROOT_DEV}" 2>&1 | grep -v ext2fs_check_if_mount | grep -v "UROOT: clean" | tee /var/log/fsck.log
 
 # Mount the root filesystem as defined by the boot parameters
-mount ${ROOT_DEV} ${ROOT_RW}
+mount -t ext4 ${ROOT_DEV} ${ROOT_RW}
 [ $? -ne 0 ] && panic "Unable to mount root device ${ROOT_DEV}!"
 
 # If we are asked to create partition information, do it now

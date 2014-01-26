@@ -32,6 +32,7 @@ mkdir -p /var/lock
 mount -t sysfs -o nodev,noexec,nosuid sysfs /sys 2>/dev/null >/dev/null
 mount -t proc -o nodev,noexec,nosuid proc /proc 2>/dev/null >/dev/null
 mount -t devtmpfs -o mode=0755 none /dev 2>/dev/null >/dev/null
+ln -s /proc/mounts /etc/mtab
 
 # Mount /dev/pts
 mkdir /dev/pts
@@ -50,7 +51,7 @@ clear
 # Logging
 echo ""
 echo "* Welcome to micro-CernVM"
-echo "* Beta release $(cat /version)"
+echo "* Release $(cat /version)"
 echo ""
 #log_start "Setting up environment..."
 
