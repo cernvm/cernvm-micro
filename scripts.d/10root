@@ -92,7 +92,7 @@ log_start "Mounting root filesystem..."
 /sbin/e2fsck -p "${ROOT_DEV}" 2>&1 | grep -v ext2fs_check_if_mount | grep -v "UROOT: clean" | tee /var/log/fsck.log
 
 # Mount the root filesystem as defined by the boot parameters
-mount -t ext4 ${ROOT_DEV} ${ROOT_RW}
+mount ${ROOT_DEV} ${ROOT_RW}
 [ $? -ne 0 ] && panic "Unable to mount root device ${ROOT_DEV}!"
 
 # If we are asked to create partition information, do it now

@@ -18,7 +18,7 @@ UCONTEXT_RETRIES=2
 
 fetch_configdrive() {
   mkdir -p /context_mount
-  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}'); do
+  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}' | sort); do
     filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
     if [ "x$filesystem" = "xiso9660" -o "x$filesystem" = "xvfat" ]; then
       mount -o ro -t $filesystem /dev/$P /context_mount >/dev/null 2>&1
@@ -38,7 +38,7 @@ fetch_configdrive() {
 
 fetch_opennebula() {
   mkdir -p /context_mount
-  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}'); do
+  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}' | sort); do
     filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
     if [ "x$filesystem" = "xiso9660" -o "x$filesystem" = "xvfat" ]; then
       mount -o ro -t $filesystem /dev/$P /context_mount >/dev/null 2>&1
@@ -59,7 +59,7 @@ fetch_opennebula() {
 
 fetch_vsphere() {
   mkdir -p /context_mount
-  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}'); do
+  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}' | sort); do
     filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
     if [ "x$filesystem" = "xiso9660" ]; then
       mount -o ro -t $filesystem /dev/$P /context_mount >/dev/null 2>&1

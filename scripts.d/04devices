@@ -23,7 +23,7 @@ sync_block() {
 
     _IFS="$IFS"
     IFS=$'\n'
-    for L in $(cat /proc/partitions | tail -n+3); do
+    for L in $(cat /proc/partitions | tail -n+3 | sort -k4); do
         MAJOR=$(echo "$L" | awk '{ print $1 }')
         MINOR=$(echo "$L" | awk '{ print $2 }')
         DEV=$(echo "$L" | awk '{ print $4 }')

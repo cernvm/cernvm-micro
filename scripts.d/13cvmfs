@@ -30,7 +30,6 @@ else
   CVMFS_PROXY="\"$auto_proxy\""
 fi
 CVMFS_URL=""
-CVMFS_KEY=""
 CERNVM_ARCH=$(uname -m)
 CERNVM_PATH=""
 
@@ -45,9 +44,6 @@ for x in $(cat /proc/cmdline); do
     		;;
     	cvmfs_proxy=*)
     		CVMFS_PROXY=${x#cvmfs_proxy=}
-    		;;
-    	cvmfs_key=*)
-    		CVMFS_KEY=${x#cvmfs_key=}
     		;;
     	cvmfs_url=*)
     		CVMFS_URL=${x#cvmfs_url=}
@@ -80,7 +76,6 @@ if [ -z "$CVMFS_URL" ]; then
   done
   CVMFS_URL="${CVMFS_URL}\""
 fi
-[ -z "$CVMFS_KEY" ] && CVMFS_KEY="/etc/cvmfs/keys/${CVMFS_REPOS}.pub"
 
 # Prepare cache dir
 CVMFS_CACHE="${ROOT_RW}/cache"
@@ -110,7 +105,7 @@ CVMFS_RELOAD_SOCKETS=${CVMFS_CACHE}
 CVMFS_QUOTA_LIMIT=${CVMFS_QUOTA_LIMIT}
 CVMFS_SERVER_URL=${CVMFS_URL}
 CVMFS_HTTP_PROXY=${CVMFS_PROXY}
-CVMFS_PUBLIC_KEY=${CVMFS_KEY}
+CVMFS_KEYS_DIR=/etc/cvmfs/keys/${CVMFS_REPOS}
 CVMFS_CHECK_PERMISSIONS=yes
 CVMFS_IGNORE_SIGNATURE=no
 CVMFS_AUTO_UPDATE=no
@@ -146,8 +141,9 @@ mount_cvmfs() {
 mount_cvmfs
 [ $? -ne 0 ] && panic "Unable to mount cvmfs root filesystem!"
 
-# Export key
-cp ${CVMFS_KEY} ${ROOT_RW}/aux/cvmfskey.pub
+# Export keys
+mkdir -p ${ROOT_RW}/aux/keys
+cp -rf /etc/cvmfs/keys/${CVMFS_REPOS} ${ROOT_RW}/aux/keys/
 
 if [ $CVMFS_FRESH -eq 1 ]; then
   # TODO xattr from busybox
