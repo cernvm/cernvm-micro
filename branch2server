@@ -1,4 +1,4 @@
 devel		hepvm.cern.ch
 testing		hepvm.cern.ch
 slc4		hepvm.cern.ch
-prod		cvmfs-stratum-one.cern.ch,cvmfs.fnal.gov
+prod		cvmfs-stratum-one.cern.ch,cvmfs.fnal.gov,cvmfs.racf.bnl.gov
