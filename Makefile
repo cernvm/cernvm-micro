@@ -36,7 +36,7 @@ $(IMAGE_DIR)/ucernvm.$(UCERNVM_STRONG_VERSION).tar: initrd.$(UCERNVM_STRONG_VERS
 	rm -rf _tarbuild
 	mkdir -p _tarbuild
 	cp initrd.$(UCERNVM_STRONG_VERSION) kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).xz _tarbuild
-	echo "version=$(KERNEL_STRONG_VERSION)" > _tarbuild/apply
+	echo "version=$(UCERNVM_STRONG_VERSION)" > _tarbuild/apply
 	echo "kernel=vmlinuz-$(KERNEL_STRONG_VERSION).xz" >> _tarbuild/apply
 	echo "initrd=initrd.$(UCERNVM_STRONG_VERSION)" >> _tarbuild/apply
 	echo "cmdline=" >> _tarbuild/apply

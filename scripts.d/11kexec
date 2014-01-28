@@ -11,7 +11,7 @@ require_versioned_package kexec ${KEXEC_STRONG_VERSION}
 
 if [ -f ${ROOT_RW}/kexec/apply ]; then
   version=$(cat ${ROOT_RW}/kexec/apply | grep "^version=" | cut -d= -f2)
-  if [ "x$version" != "x$(uname -r)" ]; then
+  if [ "x$version" != "x$(cat /version 2>/dev/null)" ]; then
     log_start "kexec into kernel $version..."
     kernel=${ROOT_RW}/kexec/$(cat ${ROOT_RW}/kexec/apply | grep "^kernel=" | cut -d= -f2)
     initrd=${ROOT_RW}/kexec/$(cat ${ROOT_RW}/kexec/apply | grep "^initrd=" | cut -d= -f2)
@@ -33,3 +33,5 @@ if [ -f ${ROOT_RW}/kexec/apply ]; then
   fi
 fi
 
+mkdir -p ${ROOT_RW}/aux
+cat /version > ${ROOT_RW}/aux/ucernvm-version
