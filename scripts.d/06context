@@ -85,10 +85,13 @@ download_userdata() {
   local server=$1
   local url=$2
   local meta_url=$3
+  local extra_header=$4
+  local extra_header_opt=
+  [ "x${extra_header}" != "x" ] && extra_header_opt="-H"
 
   nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true > /dev/null 2>&1
   if [ $? -eq 0 ]; then
-    curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
+    curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
     if [ $? -eq 0 ]; then
       return 0
     else
@@ -97,7 +100,7 @@ download_userdata() {
 
     # Check if there are meta-data but no user data
     if [ "x$meta_url" != "x" ]; then
-      curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
+      curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
       if [ $? -eq 0 ]; then
         cat /dev/null > ${USER_DATA}
         return 0
@@ -109,6 +112,18 @@ download_userdata() {
   
   # Failure
   return 1
+}
+
+fetch_gce() {
+  download_userdata 169.254.169.254 \
+    http://169.254.169.254/computeMetadata/v1/instance/attributes/cvm-user-data \
+    http://169.254.169.254/computeMetadata/v1/instance/id \
+    "X-Google-Metadata-Request: True"
+  if [ $? -eq 0 ]; then
+    UCONTEXT_SRC="GCE"
+    base64 -d ${USER_DATA} > ${USER_DATA}~
+    mv ${USER_DATA}~ ${USER_DATA}
+  fi
 }
 
 fetch_ec2() {
@@ -128,7 +143,7 @@ fetch_openstack() {
 
 if [ ! -b "${ROOT_DEV}" ]; then
   log_start "Contextualizing VM..."
-  for data_source in configdrive opennebula vsphere rhevm ec2 openstack; do
+  for data_source in configdrive opennebula vsphere rhevm gce ec2 openstack; do
     [ -f ${USER_DATA} ] && break
     fetch_${data_source}
   done
