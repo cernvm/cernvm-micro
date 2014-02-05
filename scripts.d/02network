@@ -16,7 +16,8 @@ log_start "Starting networking..."
 DEVICES=$(ifconfig -a | grep '^[a-z]' | awk '{ print $1 }')
 for DEV in $DEVICES; do
    if [ "$DEV" != "lo" ]; then
-      ifconfig $DEV up
+     # MTU 1460 for Google Compute Engine
+     ifconfig $DEV mtu 1460 up
    fi
 done
 

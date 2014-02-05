@@ -103,6 +103,19 @@ $(IMAGE_DIR)/$(IMAGE_NAME).hdd: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTR
 	syslinux --install --offset 512 --active --directory /isolinux tmp/$(IMAGE_NAME).hdd
 	mv tmp/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 
+$(IMAGE_DIR)/$(IMAGE_NAME).tar.gz: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
+	rm -rf tmp/gce && mkdir -p tmp/gce/mountpoint
+	cp $(IMAGE_DIR)/$(IMAGE_NAME).hdd tmp/gce/disk.raw
+	losetup -o 512 /dev/loop5 tmp/gce/disk.raw
+	mount /dev/loop5 tmp/gce/mountpoint
+	cat tmp/gce/mountpoint/isolinux/syslinux.cfg | sed s/console=tty0// | sed "s/lastarg/console=ttyS0/" > tmp/gce/mountpoint/isolinux/syslinux.cfg~
+	mv tmp/gce/mountpoint/isolinux/syslinux.cfg~ tmp/gce/mountpoint/isolinux/syslinux.cfg
+	cat tmp/gce/mountpoint/isolinux/syslinux.cfg    
+	umount tmp/gce/mountpoint && rmdir tmp/gce/mountpoint
+	losetup -d /dev/loop5
+	cd tmp/gce && tar cvfz $(IMAGE_NAME).tar.gz disk.raw
+	mv tmp/gce/$(IMAGE_NAME).tar.gz $(IMAGE_DIR)
+
 $(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	qemu-img convert -O vpc $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).vhd
 			

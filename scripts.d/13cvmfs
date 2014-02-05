@@ -139,7 +139,15 @@ mount_cvmfs() {
 }
 
 mount_cvmfs
-[ $? -ne 0 ] && panic "Unable to mount cvmfs root filesystem!"
+if [ $? -ne 0 ]; then
+  echo "CernVM-FS syslog:"
+  cat ${CVMFS_CACHE}/usyslog
+  echo "CernVM-FS config:"
+  cat /etc/cvmfs/config.d/${CVMFS_REPOS}.conf
+  echo "Kernel command line:"
+  cat /proc/cmdline
+  panic "Unable to mount cvmfs root filesystem!"
+fi
 
 # Export keys
 mkdir -p ${ROOT_RW}/aux/keys
