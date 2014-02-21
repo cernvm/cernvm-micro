@@ -100,7 +100,7 @@ $(IMAGE_DIR)/$(IMAGE_NAME).hdd: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTR
 	cd $(CERNVM_ROOTTREE) && gtar -c --exclude=.svn -f - . .ucernvm_boot_loader | (cd ../tmp/mountpoint-$(IMAGE_NAME) && gtar -xf -)
 	umount tmp/mountpoint-$(IMAGE_NAME) && rmdir tmp/mountpoint-$(IMAGE_NAME)
 	losetup -d /dev/loop5
-	syslinux --install --offset 512 --active --directory /isolinux tmp/$(IMAGE_NAME).hdd
+	syslinux --install --offset 512 --active --mbr --directory /isolinux tmp/$(IMAGE_NAME).hdd
 	mv tmp/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 
 $(IMAGE_DIR)/$(IMAGE_NAME).tar.gz: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
