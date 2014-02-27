@@ -116,9 +116,19 @@ $(IMAGE_DIR)/$(IMAGE_NAME).tar.gz: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	cd tmp/gce && tar cvfz $(IMAGE_NAME).tar.gz disk.raw
 	mv tmp/gce/$(IMAGE_NAME).tar.gz $(IMAGE_DIR)
 
-$(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
-	qemu-img convert -O vpc $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).vhd
-			
+$(IMAGE_DIR)/$(IMAGE_NAME).vdi: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
+	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).vdi
+	VBoxManage modifyhd $(IMAGE_DIR)/$(IMAGE_NAME).vdi --resize $$((1024*20))
+	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vdi
+
+$(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
+	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME).vdi $(IMAGE_DIR)/$(IMAGE_NAME).vhd --format VHD
+	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vhd
+		
+$(IMAGE_DIR)/$(IMAGE_NAME).vmdk: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
+	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME).vdi $(IMAGE_DIR)/$(IMAGE_NAME).vmdk --format VMDK --variant Stream
+	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vmdk
+	
 $(IMAGE_DIR)/$(IMAGE_NAME).fat: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/version
 	rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
 	cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).gzip $(CERNVM_ROOTTREE)/cernvm/vmlinuz.gzip
