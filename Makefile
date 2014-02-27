@@ -117,17 +117,22 @@ $(IMAGE_DIR)/$(IMAGE_NAME).tar.gz: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	mv tmp/gce/$(IMAGE_NAME).tar.gz $(IMAGE_DIR)
 
 $(IMAGE_DIR)/$(IMAGE_NAME).vdi: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
+	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	VBoxManage modifyhd $(IMAGE_DIR)/$(IMAGE_NAME).vdi --resize $$((1024*20))
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 
 $(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
+	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vhd
 	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME).vdi $(IMAGE_DIR)/$(IMAGE_NAME).vhd --format VHD
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vhd
+	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 		
 $(IMAGE_DIR)/$(IMAGE_NAME).vmdk: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
+	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vmdk
 	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME).vdi $(IMAGE_DIR)/$(IMAGE_NAME).vmdk --format VMDK --variant Stream
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vmdk
+	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	
 $(IMAGE_DIR)/$(IMAGE_NAME).fat: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/version
 	rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
