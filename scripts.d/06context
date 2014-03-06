@@ -161,6 +161,13 @@ if [ ! -b "${ROOT_DEV}" ]; then
     fetch_${data_source}
   done
   if [ -f ${USER_DATA} ]; then
+    # Try to unzip
+    cat ${USER_DATA} | gzip -d 2>/dev/null > ${USER_DATA}~
+    if [ $? -eq 0 ]; then
+      mv ${USER_DATA}~ ${USER_DATA}
+    else
+      rm -f ${USER_DATA}~
+    fi
     cat ${USER_DATA} | parse_user_data > ${UCONTEXT_TMP}
     . ${UCONTEXT_TMP}
   fi

@@ -1,0 +1,12 @@
+1.17-5:
+  * Handle gziped contexts
+  * Fix quotes of cvmfs proxy
+  * Add DESY Stratum 1
+  * Kernel 3.10.32
+  * Update open-vm-tools kernel modules to 9.4.0
+  * Google Compute Engine
+    * MTU 1460, otherwise network hangs
+    * Adapt to their funny DHCP reply (netmask 255.255.255.255)
+    * Contextualization (meta-data key cvm-user-data, base64 encoded)
+    * Build system: append console=ttyS0 for GCE tarballs
+  * Proper invokation of syslinux
