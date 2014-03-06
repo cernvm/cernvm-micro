@@ -85,14 +85,21 @@ download_userdata() {
   local server=$1
   local url=$2
   local meta_url=$3
-  local extra_header=$4
+  local extra_header="$4"
   local extra_header_opt=
   [ "x${extra_header}" != "x" ] && extra_header_opt="-H"
+  local retval
 
   nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true > /dev/null 2>&1
   if [ $? -eq 0 ]; then
-    curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
-    if [ $? -eq 0 ]; then
+    if [ "x${extra_header}" != "x" ]; then
+      curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
+      retval=$?
+    else
+      curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
+      retval=$?
+    fi
+    if [ $retval -eq 0 ]; then
       return 0
     else
       rm -f ${USER_DATA}
@@ -100,7 +107,13 @@ download_userdata() {
 
     # Check if there are meta-data but no user data
     if [ "x$meta_url" != "x" ]; then
-      curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
+      if [ "x${extra_header}" != "x" ]; then
+        curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
+        retval=$?
+      else
+        curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
+        retval=$?
+      fi
       if [ $? -eq 0 ]; then
         cat /dev/null > ${USER_DATA}
         return 0
