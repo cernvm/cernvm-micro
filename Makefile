@@ -134,6 +134,33 @@ $(IMAGE_DIR)/$(IMAGE_NAME).vmdk: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vmdk
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	
+$(IMAGE_DIR)/$(IMAGE_NAME).ova: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
+	rm -rf /root/VirtualBox\ VMs /root/.config/VirtualBox
+	rm -rf $(IMAGE_DIR)/ova-build && mkdir $(IMAGE_DIR)/ova-build
+	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/ova-build/boot.vdi
+	VBoxManage clonehd $(IMAGE_DIR)/ova-build/boot.vdi $(IMAGE_DIR)/ova-build/boot.vmdk --format VMDK --variant Stream
+	VBoxManage createhd --filename $(IMAGE_DIR)/ova-build/scratch.vmdk --size 20000 --format VMDK --variant Stream
+	rm -rf /root/VirtualBox\ VMs
+	VBoxManage createvm --name "CernVM 3" --ostype Linux26_64 --register
+	VBoxManage storagectl "CernVM 3" --name SATA --add sata --portcount 4 --bootable on
+	VBoxManage modifyvm "CernVM 3" --memory 1024 --vram 20 --nic1 nat --nic2 hostonly --natdnsproxy1 on --natdnsproxy2 on --clipboard bidirectional --draganddrop hosttoguest
+	while pgrep VBoxSVC > /dev/null; do true; done
+	VBoxManage storageattach "CernVM 3" --storagectl SATA --port 0 --type hdd --medium $(TOP)/$(IMAGE_DIR)/ova-build/boot.vmdk
+	VBoxManage storageattach "CernVM 3" --storagectl SATA --port 1 --type hdd --medium $(TOP)/$(IMAGE_DIR)/ova-build/scratch.vmdk
+	VBoxManage export "CernVM 3" -o $(TOP)/$(IMAGE_DIR)/ova-build/$(IMAGE_NAME).ova \
+	  --vsys 0 \
+	  --product "CernVM" \
+	  --producturl "http://cernvm.cern.ch"
+	rm -f $(IMAGE_DIR)/ova-build/*.vmdk
+	cd $(IMAGE_DIR)/ova-build && tar xf $(IMAGE_NAME).ova
+	cat $(IMAGE_DIR)/ova-build/$(IMAGE_NAME).ovf | \
+	  sed -e 's/MACAddress="[0-9A-Z]*"//' | sed -e 's/HostOnlyInterface name=""/HostOnlyInterface name="vboxnet0"/' > $(IMAGE_DIR)/ova-build/$(IMAGE_NAME).ovf~
+	mv $(IMAGE_DIR)/ova-build/$(IMAGE_NAME).ovf~ $(IMAGE_DIR)/ova-build/$(IMAGE_NAME).ovf
+	rm -f $(IMAGE_DIR)/ova-build/$(IMAGE_NAME).ova
+	cd $(IMAGE_DIR)/ova-build && tar cf $(IMAGE_NAME).ova $(IMAGE_NAME).ovf *.vmdk
+	mv $(IMAGE_DIR)/ova-build/$(IMAGE_NAME).ova $(IMAGE_DIR)/$(IMAGE_NAME).ova
+	rm -rf $(IMAGE_DIR)/ova-build
+
 $(IMAGE_DIR)/$(IMAGE_NAME).fat: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/version
 	rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
 	cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).gzip $(CERNVM_ROOTTREE)/cernvm/vmlinuz.gzip

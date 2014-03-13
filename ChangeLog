@@ -2,7 +2,7 @@
   * Handle gziped contexts
   * Fix quotes of cvmfs proxy
   * Add DESY Stratum 1
-  * Kernel 3.10.32
+  * Kernel 3.10.33
   * Update open-vm-tools kernel modules to 9.4.0
   * Google Compute Engine
     * MTU 1460, otherwise network hangs
