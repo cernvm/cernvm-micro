@@ -1,3 +1,8 @@
+1.17-6:
+  * Fix rebasing /root
+  * Add vmxglx driver
+  * Kernel 3.10.34
+
 1.17-5:
   * Handle gziped contexts
   * Fix quotes of cvmfs proxy

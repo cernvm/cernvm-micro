@@ -25,7 +25,7 @@ static void Usage(const char *exe) {
 
 static void WalkCwd(const char *path, const unsigned level,
                     const int in_etc, const int in_var, const int in_var_lib,
-                    const int in_var_lib_rpm)
+                    const int in_var_lib_rpm, const int in_root)
 {
   DIR *dirp = opendir(".");
   if (!dirp) {
@@ -86,7 +86,7 @@ static void WalkCwd(const char *path, const unsigned level,
       case DT_REG:
       case DT_LNK:
         if (modified_on_scratch) {
-          if ((in_etc || in_var) && !in_var_lib_rpm) {
+          if ((in_etc || in_var || in_root) && !in_var_lib_rpm) {
             fprintf(g_flog, "preserve %s/%s\n", path, dentry->d_name);
           } else {
             fprintf(g_flog, "rebase %s/%s", path, dentry->d_name);
@@ -118,8 +118,11 @@ static void WalkCwd(const char *path, const unsigned level,
           int next_in_var_lib_rpm =
             in_var_lib_rpm ||
             (in_var_lib && (level == 2) && (strcmp(dentry->d_name, "rpm") == 0));
+          int next_in_root = 
+            in_root || ((level == 0) && (strcmp(dentry->d_name, "root") == 0));
           WalkCwd(new_base, level+1,
-                  next_in_etc, next_in_var, next_in_var_lib, next_in_var_lib_rpm);
+                  next_in_etc, next_in_var, next_in_var_lib, next_in_var_lib_rpm,
+                  next_in_root);
           retval = chdir("..");
           assert(retval == 0);
         }
@@ -150,7 +153,7 @@ int main(int argc, char **argv) {
     return 1;
   }
   WalkCwd("", 0,
-          0, 0, 0, 0);
+          0, 0, 0, 0, 0);
   //printf("\n");
   fclose(g_flog);
 
