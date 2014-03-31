@@ -1,4 +1,8 @@
+1.17-7:
+  * Kernel 3.10.35
+
 1.17-6:
+  * Add SYSFS_DEPRECATED support
   * Fix rebasing /root
   * Add vmxglx driver
   * Kernel 3.10.34
