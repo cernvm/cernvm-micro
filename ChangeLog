@@ -1,3 +1,6 @@
+1.17-9:
+  * Kernel 3.10.36
+
 1.17-8:
   * Extract pickup data into ${ROOT}
 
