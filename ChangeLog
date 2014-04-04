@@ -1,4 +1,9 @@
+1.17-8:
+  * Extract pickup data into ${ROOT}
+
 1.17-7:
+  * Support pickup from /cernvm/pickup.tar.gz
+  * Fix false GCE detection
   * Kernel 3.10.35
 
 1.17-6:

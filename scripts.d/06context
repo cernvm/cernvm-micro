@@ -114,7 +114,7 @@ download_userdata() {
         curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
         retval=$?
       fi
-      if [ $? -eq 0 ]; then
+      if [ $retval -eq 0 ]; then
         cat /dev/null > ${USER_DATA}
         return 0
       else

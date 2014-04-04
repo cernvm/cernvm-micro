@@ -26,5 +26,10 @@ if [ -f "${EXTRA_USER_DATA}" ]; then
   mv "${EXTRA_USER_DATA}" "${ROOT}${EXTRA_USER_DATA_INJECTED}"
 fi
 
+# Extract pickup tarball
+if [ -f "${EXTRA_PICKUP}" ]; then
+  sh -c "cd ${ROOT} && tar xzf ${EXTRA_PICKUP}"
+fi
+
 # Run bootstrap script provided by the repository
 [ -f ${ROOT}/.ucernvm_bootstrap ] && . ${ROOT}/.ucernvm_bootstrap $ROOT

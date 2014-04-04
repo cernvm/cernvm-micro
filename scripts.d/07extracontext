@@ -8,7 +8,9 @@
 #===========================
 
 EXTRA_USER_DATA_INJECTED=/cernvm/extra-user-data
+EXTRA_PICKUP_INJECTED=/cernvm/pickup.tar.gz
 EXTRA_USER_DATA=/extra-user-data
+EXTRA_PICKUP=/pickup.tar.gz
 EXTRA_UCONTEXT_TMP=/extra-ucontext
 EXTRA_UCONTEXT_SRC=
 
@@ -24,6 +26,14 @@ if [ ! -b "${ROOT_DEV}" ]; then
           EXTRA_UCONTEXT_SRC="/dev/${P}"
         else
           EXTRA_UCONTEXT_SRC="${EXTRA_UCONTEXT_SRC} /dev/${P}"
+        fi
+      fi
+      if [ -f "/extra_context_mount${EXTRA_PICKUP_INJECTED}" ]; then
+        cp /extra_context_mount${EXTRA_PICKUP_INJECTED} ${EXTRA_PICKUP}
+        if [ "x$EXTRA_UCONTEXT_SRC" = "x" ]; then
+          EXTRA_UCONTEXT_SRC="/dev/${P}(pickup)"
+        else
+          EXTRA_UCONTEXT_SRC="${EXTRA_UCONTEXT_SRC} /dev/${P}(pickup)"
         fi
       fi
       umount /extra_context_mount

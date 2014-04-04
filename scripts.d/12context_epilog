@@ -20,6 +20,10 @@ if [ -f ${EXTRA_UCONTEXT_TMP} ]; then
   mv ${EXTRA_UCONTEXT_TMP} ${EXTRA_UCONTEXT}
 fi
 
+if [ -f ${EXTRA_PICKUP} ]; then
+  mkdir -p ${ROOT_RW}/context
+  cp ${EXTRA_PICKUP} ${ROOT_RW}/context/pickup.tar.gz
+fi
 
 [ -f ${UCONTEXT} ] && . ${UCONTEXT}
 [ -f ${EXTRA_UCONTEXT} ] && . ${EXTRA_UCONTEXT}
