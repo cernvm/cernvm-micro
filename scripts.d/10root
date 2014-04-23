@@ -26,7 +26,7 @@ if [ ! -b "${ROOT_DEV}" ]; then
     if [ "x$FIRST_EMPTY_DISK" != "x" -a ! "x$_UCONTEXT_USE_BOOTHD" = "x1" ]; then
         log_start "Partitioning /dev/${FIRST_EMPTY_DISK}..."
 	DISK_SIZE_BYTES=$(blockdev --getsize64 /dev/${FIRST_EMPTY_DISK})
-        if [ "x$_UCONTEXT_RESIZE_ROOTFS" != "x1" -a ${DISK_SIZE_BYTES} -gt ${DEFAULT_SIZE_BYTES} ]; then
+        if [ ! "x$_UCONTEXT_RESIZE_ROOTFS" != "x1" -a ${DISK_SIZE_BYTES} -gt ${DEFAULT_SIZE_BYTES} ]; then
           # Use first 20G
           PARTITION_SIZE_MB=${DEFAULT_SIZE_MB}
           # Partition rest to avoid the need to reboot later
@@ -55,7 +55,7 @@ if [ ! -b "${ROOT_DEV}" ]; then
             panic "No ephemeral storage, not enough free space on boot HD"
         fi
 
-        if [ "x$_UCONTEXT_RESIZE_ROOTFS" != "x1" -a ${FREE_SIZE_BYTES} -gt ${DEFAULT_SIZE_BYTES} ]; then
+        if [ ! "x$_UCONTEXT_RESIZE_ROOTFS" != "x1" -a ${FREE_SIZE_BYTES} -gt ${DEFAULT_SIZE_BYTES} ]; then
             # Use first 20G
             PARTITION_SIZE_MB=${DEFAULT_SIZE_MB}
             # Partition rest to avoid the need to reboot later

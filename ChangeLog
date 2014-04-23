@@ -1,5 +1,9 @@
+1.17-10:
+
 1.17-9:
-  * Kernel 3.10.36
+  * cvmfs 2.1.18
+  * Resize root fs by default
+  * Kernel 3.10.37
 
 1.17-8:
   * Extract pickup data into ${ROOT}
