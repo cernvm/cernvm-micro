@@ -81,6 +81,11 @@ int main() {
           {
             keyval[1] = "1";
           }
+          if (ToUpper(keyval[1]) == "NO" || ToUpper(keyval[1]) == "OFF" ||
+              ToUpper(keyval[1]) == "FALSE")
+          {
+            keyval[1] = "0";
+          }
           printf("_UCONTEXT_%s=%s\n",
                  ToUpper(keyval[0]).c_str(), keyval[1].c_str());
         }

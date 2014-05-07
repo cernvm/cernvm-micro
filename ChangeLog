@@ -1,3 +1,10 @@
+1.17-12:
+  * Turn on host I/O cache in OVA images
+  * User dnsnathostresolver instead of dnsnatproxy for OVA
+
+1.17-11:
+ * Fix contexutalization default off setting
+
 1.17-10:
  * Kernel 3.10.38
 
