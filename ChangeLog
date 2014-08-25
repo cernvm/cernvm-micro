@@ -1,3 +1,6 @@
+1.18-3:
+  * Fix meta-data retrieval on some OpenStack platforms (thanks to Frank Berghaus)
+
 1.18-2:
 
 1.18-1:
