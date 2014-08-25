@@ -148,8 +148,9 @@ fetch_ec2() {
 
 
 fetch_openstack() {
-  local default_gateway=$(route | grep ^default | awk '{print $2}')
-  download_userdata $default_gateway http://${default_gateway}/latest/user-data
+  download_userdata 169.254.169.254 \
+    http://169.254.169.254/latest/user-data \
+    http://169.254.169.254/latest/meta-data/ami-id
   [ $? -eq 0 ] && UCONTEXT_SRC="OpenStack"
 }
 
