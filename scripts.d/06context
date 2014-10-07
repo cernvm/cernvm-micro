@@ -141,16 +141,14 @@ fetch_gce() {
 
 fetch_ec2() {
   download_userdata 169.254.169.254 \
-    http://169.254.169.254/2009-04-04/user-data \
-    http://169.254.169.254/2009-04-04/meta-data/ami-id
+    http://169.254.169.254/latest/meta-data/ami-id
   [ $? -eq 0 ] && UCONTEXT_SRC="EC2"
 }
 
 
 fetch_openstack() {
   download_userdata 169.254.169.254 \
-    http://169.254.169.254/latest/user-data \
-    http://169.254.169.254/latest/meta-data/ami-id
+    http://169.254.169.254/openstack/latest/meta_data.json
   [ $? -eq 0 ] && UCONTEXT_SRC="OpenStack"
 }
 
