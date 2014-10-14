@@ -1,3 +1,7 @@
+1.18-4:
+  * Add bridge support
+  * Add more cgroup controllers (device, network path)
+
 1.18-3:
   * Fix meta-data retrieval on some OpenStack platforms (thanks to Frank Berghaus)
 
