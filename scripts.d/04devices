@@ -47,7 +47,7 @@ sync_block() {
         # Fetch label and update /dev/disk/...
         if [ $IS_PARTITION -eq 1 ]; then
             DEV_LABEL=$(e2label /dev/$DEV 2>/dev/null)
-            [ $? -eq 0 ] && ln -s /dev/${DEV} /dev/disk/by-label/${DEV_LABEL}
+            [ $? -eq 0 ] && ln -s /dev/${DEV} /dev/disk/by-label/${DEV_LABEL} 2>/dev/null
         fi
 
         # Skip removable devices
@@ -103,7 +103,7 @@ sync_block
 # Check for label also in some other places
 for DEV in sr{0,1}; do
     DEV_LABEL=$(e2label /dev/$DEV 2>/dev/null)
-    [ $? -eq 0 ] && ln -s /dev/${DEV} /dev/disk/by-label/${LABEL}
+    [ $? -eq 0 ] && ln -s /dev/${DEV} /dev/disk/by-label/${LABEL} 2>/dev/null
 done
 
 ROOT_DEV=/dev/disk/by-label/UROOT
