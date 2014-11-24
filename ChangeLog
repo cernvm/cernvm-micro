@@ -1,3 +1,6 @@
+1.18-9:
+  * Support CVMFS_PAC_URLS contextualization
+
 1.18-4:
   * Add bridge support
   * Add more cgroup controllers (device, network path)
