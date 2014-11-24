@@ -122,6 +122,7 @@ The following key-value pairs are recognized:
 |-----------------|-----------------------------------|--------------------------------------------------|
 |resize_rootfs    | on/off                            | use all of the harddisk instead of the first 20G |
 |cvmfs_http_proxy | HTTP proxy in CernVM-FS notation  |                                                  |
+|cvmfs_pac_urls   | WPAD proxy autoconfig URLs        | URLs are ';'-separated, should return PAC files  |
 |cvmfs_server     | List of Stratum 1 servers         | E.g.: cvmfs-stratum-one.cern.ch,another.com      |
 |cvmfs_branch     | The repository name               | The url is currently fixed to hepvm.cern.ch      |
 |cvmfs_tag        | The snapshot name                 | For long-term data preservation                  |
