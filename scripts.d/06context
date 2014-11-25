@@ -20,6 +20,7 @@ fetch_configdrive() {
   mkdir -p /context_mount
   for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}' | sort); do
     filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
+    echo "  looking for ISO/FAT image at /dev/$P ($filesystem)" >> /var/log/context.log
     if [ "x$filesystem" = "xiso9660" -o "x$filesystem" = "xvfat" ]; then
       mount -o ro -t $filesystem /dev/$P /context_mount >/dev/null 2>&1
       if [ $? -eq 0 ]; then
@@ -40,6 +41,7 @@ fetch_opennebula() {
   mkdir -p /context_mount
   for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}' | sort); do
     filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
+    echo "  looking for ISO/FAT image at /dev/$P ($filesystem)" >> /var/log/context.log
     if [ "x$filesystem" = "xiso9660" -o "x$filesystem" = "xvfat" ]; then
       mount -o ro -t $filesystem /dev/$P /context_mount >/dev/null 2>&1
       if [ $? -eq 0 ]; then
@@ -61,6 +63,7 @@ fetch_vsphere() {
   mkdir -p /context_mount
   for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}' | sort); do
     filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
+    echo "  looking for ISO image at /dev/$P ($filesystem)" >> /var/log/context.log
     if [ "x$filesystem" = "xiso9660" ]; then
       mount -o ro -t $filesystem /dev/$P /context_mount >/dev/null 2>&1
       if [ $? -eq 0 ]; then
@@ -89,13 +92,16 @@ download_userdata() {
   local extra_header_opt=
   [ "x${extra_header}" != "x" ] && extra_header_opt="-H"
   local retval
+  echo "  connecting: nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true" >> /var/log/context.log
 
   nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true > /dev/null 2>&1
   if [ $? -eq 0 ]; then
     if [ "x${extra_header}" != "x" ]; then
+      echo "  downloading: curl -f -s -o ${USER_DATA} ${extra_header_opt} ${extra_header} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url" >> /var/log/context.log
       curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
       retval=$?
     else
+      echo "  downloading: curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url" >> /var/log/context.log
       curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
       retval=$?
     fi
@@ -108,9 +114,11 @@ download_userdata() {
     # Check if there are meta-data but no user data
     if [ "x$meta_url" != "x" ]; then
       if [ "x${extra_header}" != "x" ]; then
+        echo "  downloading: curl -f -s -o ${USER_DATA} ${extra_header_opt} ${extra_header} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url" >> /var/log/context.log
         curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
         retval=$?
       else
+        echo "  downloading: curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url" >> /var/log/context.log
         curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
         retval=$?
       fi
@@ -159,12 +167,15 @@ if [ ! -b "${ROOT_DEV}" ]; then
   log_start "Contextualizing VM..."
   for data_source in configdrive opennebula vsphere rhevm gce ec2 openstack; do
     [ -f ${USER_DATA} ] && break
+    echo "looking for user data at $data_source" >> /var/log/context.log
     fetch_${data_source}
   done
   if [ -f ${USER_DATA} ]; then
+    echo "found user data at $UCONTEXT_SRC" >> /var/log/context.log
     # Try to unzip
     cat ${USER_DATA} | gzip -d 2>/dev/null > ${USER_DATA}~
     if [ $? -eq 0 ]; then
+      echo "unzipped user data" >> /var/log/context.log
       mv ${USER_DATA}~ ${USER_DATA}
     else
       rm -f ${USER_DATA}~

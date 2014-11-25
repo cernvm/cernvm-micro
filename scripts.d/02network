@@ -22,7 +22,7 @@ for DEV in $DEVICES; do
 done
 
 # Obtain IP address
-udhcpc -qnf -t 20 2>/dev/null >/dev/null
+udhcpc -qnf -t 20 -O staticroutes -O mtu >/var/log/udhcpc.log 2>&1
 
 
 # Ok

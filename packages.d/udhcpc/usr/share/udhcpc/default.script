@@ -17,6 +17,11 @@ case "$1" in
 		;;
 
 	renew|bound)
+		if [ "x$mtu" != "x" ]; then
+		  echo "Setting MTU on interface $interface to $mtu"
+		  ifconfig $interface mtu "$mtu" up
+		fi
+
 		echo "Setting IP address $ip on $interface (netmask: $NETMASK, broadcast: $BROADCAST)"
 		ifconfig $interface $ip $NETMASK $BROADCAST
 
@@ -45,6 +50,22 @@ case "$1" in
 			echo "nameserver $i" >> $RESOLV_CONF-$$
 		done
 		mv $RESOLV_CONF-$$ $RESOLV_CONF
+
+		if [ "x$staticroutes" != "x" ]; then
+			n=1
+			nn=2
+			for i in $staticroutes; do
+				net=$(echo "$staticroutes" | cut -d ' ' -f$n)
+				router=$(echo "$staticroutes" | cut -d ' ' -f$nn)
+				if [ "x$net" = "x" ]; then
+					break
+				fi
+				echo "adding net $net with router $router"
+				route add -net "$net" gw "$router"
+				n=$((n+2))
+				nn=$((nn+2))
+			done
+		fi
 		;;
 esac
 
