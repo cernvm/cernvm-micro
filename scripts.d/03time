@@ -3,17 +3,19 @@
 #FOR:BUILD
 #===========================
 
+require_versioned_package ntpclient ${NTPCLIENT_STRONG_VERSION}
+
 #===========================
 #FOR:RUN
 #===========================
 
 # Logging
-NTP_PEER=ptbtime1.ptb.de
+NTP_PEER=pool.ntp.org
 log_start "Getting time from $NTP_PEER..."
 
 # Running ntpd
-rdate -s $NTP_PEER
-#ntpd -n -q -N -p $NTP_PEER 2>/dev/null
+#rdate -s $NTP_PEER
+ntpclient -s -h $NTP_PEER >/dev/null
 if [ $? -eq 0 ]; then
   log_ok
 else
