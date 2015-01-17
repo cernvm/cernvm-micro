@@ -1,3 +1,6 @@
+1.18-13:
+  * Enforce 5 seconds timeout for initial NTP query
+
 1.18-12:
   * Kernel 3.10.64
 
