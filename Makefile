@@ -120,9 +120,10 @@ $(IMAGE_DIR)/$(IMAGE_NAME).tar.gz: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 
 $(IMAGE_DIR)/$(IMAGE_NAME).vdi: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vdi
-	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).vdi
-	VBoxManage modifyhd $(IMAGE_DIR)/$(IMAGE_NAME).vdi --resize $$((1024*20))
-	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vdi
+	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi
+	VBoxManage modifyhd $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi --resize $$((1024*20))
+	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi
+	mv $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 
 $(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vhd
