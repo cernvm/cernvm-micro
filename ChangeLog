@@ -1,3 +1,7 @@
+1.18-14:
+  * Cvmfs 2.1.20
+  * Add CVMFS_HIDE_MAGIC_XATTRS=yes paramter
+
 1.18-13:
   * Enforce 5 seconds timeout for initial NTP query
 
