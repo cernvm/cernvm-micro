@@ -122,6 +122,7 @@ CVMFS_USYSLOG=${CVMFS_CACHE}/usyslog
 CVMFS_UID_MAP=${ROOT_RW}/aux/uid_map
 CVMFS_GID_MAP=${ROOT_RW}/aux/gid_map
 CVMFS_HIDE_MAGIC_XATTRS=yes
+CVMFS_SYSTEMD_NOKILL=yes
 EOF
 touch ${ROOT_RW}/aux/uid_map ${ROOT_RW}/aux/gid_map
 

@@ -1,4 +1,7 @@
 1.18-14:
+  * Add systemd.show_status=1 kernel parameter
+  * Kernel 3.10.67
+  * Add public key for cernvm-sl7.cern.ch
   * Cvmfs 2.1.20
   * Add CVMFS_HIDE_MAGIC_XATTRS=yes paramter
 
