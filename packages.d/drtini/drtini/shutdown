@@ -1,0 +1,39 @@
+#!/sh
+SHUTDOWN_VERB=$1
+
+export PATH=/
+
+for mountpoint in $(cat /proc/mounts | awk '{print $2}' | grep ^/oldroot/ | sort -r); do
+  if [ "x$mountpoint" != "x/oldroot/mnt/.rw" -a "x$mountpoint" != "x/oldroot/mnt/.ro" ]; then
+    echo "Unmounting $mountpoint"
+    umount $mountpoint
+    if [ $? -ne 0 ]; then
+      echo "... Force unmounting $mountpoint"
+      umount -l $mountpoint
+    fi
+  fi
+done
+
+socket=$(find /oldroot/mnt/.rw/cache -maxdepth 2 -name 'cvmfs_io.*')
+echo -n "tear down to read-only" | nc local:${socket}
+echo "Tear down root file system to read-only mode"
+mount -t aufs -o remount,ro,noxino aufs /oldroot
+echo "Tear down read-write overlay to read-only mode"
+mount -o remount,ro /oldroot/mnt/.rw
+
+case "$SHUTDOWN_VERB" in
+    reboot|poweroff|halt)
+        $SHUTDOWN_VERB -f -n
+        echo "$SHUTDOWN_VERB failed!"
+        ;;
+    kexec)
+        kexec -e
+        warn "$SHUTDOWN_VERB failed!"
+        reboot -f -n
+        ;;
+    *)
+        warn "Shutdown called with argument '$SHUTDOWN_VERB'. Rebooting!"
+        reboot -f -n
+        ;;
+esac
+
