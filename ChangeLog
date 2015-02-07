@@ -1,4 +1,5 @@
 1.18-14:
+  * Add systemd initrd interface for shutdown
   * Add systemd.show_status=1 kernel parameter
   * Kernel 3.10.67
   * Add public key for cernvm-sl7.cern.ch

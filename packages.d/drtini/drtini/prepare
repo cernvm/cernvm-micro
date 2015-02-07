@@ -3,10 +3,10 @@
 SHUTDOWN_DIR=$1
 
 for binary in /sbin/kexec /sbin/busybox /drtini/shutdown; do
-  cp ${binary} ${SHUTDOWN_DIR}/${binary}
+  cp ${binary} ${SHUTDOWN_DIR}/
 done
 
-for shortcut in sh mount umount grep sed awk sort cut echo cat nc find reboot poweroff; do
-  ln -s busybox ${SHUTDOWN_DIR}/shortcut
+for shortcut in sh mount umount grep sed awk sort cut echo cat nc find reboot poweroff halt; do
+  ln -s busybox ${SHUTDOWN_DIR}/$shortcut
 done
 
