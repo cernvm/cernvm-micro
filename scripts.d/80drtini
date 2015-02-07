@@ -1,0 +1,17 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+require_package drtini
+
+#===========================
+#FOR:RUN
+#===========================
+
+if [ -d ${ROOT}/run ]; then
+  mount -t tmpfs -o mode=755,nodev tmpfs ${ROOT}/run
+  mkdir ${ROOT}/run/initramfs
+  /drtini/prepare ${ROOT}/run/initramfs  
+fi
+
