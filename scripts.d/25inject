@@ -1,0 +1,32 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+
+#===========================
+#FOR:RUN
+#===========================
+
+if [ ! -f ${ROOT}/mnt/.rw/context/injected ]; then
+  if [ ! -z "${_UCONTEXT_CERNVM_INJECT}" ]; then
+    log_start "Injecting files..." 
+    echo "${_UCONTEXT_CERNVM_INJECT}" | base64 -d > ${ROOT}/inject.tar.gz
+    if [ $? -ne 0 ]; then
+      log_fail "Bad format"
+    else
+      last_pwd="${PWD}"
+      cd ${ROOT}
+      tar xvfz inject.tar.gz
+      if [ $? -ne 0 ]; then
+        log_fail "Bad tarball"
+      else
+        log_ok
+        mkdir -p ${ROOT}/mnt/.rw/context
+        touch ${ROOT}/mnt/.rw/context/injected
+      fi
+      cd "${last_pwd}"
+    fi
+  fi
+fi
+
