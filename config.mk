@@ -24,10 +24,17 @@ EXTRAS_VERSION = 0.8
 CERNVM_INCREASE_RELEASE = 0
 
 CERNVM_SYSTEM = HEAD
-#CERNVM_BRANCHES = devel
-#IMAGE_FORMATS = hdd
-CERNVM_BRANCHES = testing devel prod slc4 slc5 sl7
-IMAGE_FORMATS = iso hdd fat vdi vmdk tar.gz ova
+CERNVM_BRANCHES = devel prod
+IMAGE_FORMATS = hdd iso
+#CERNVM_BRANCHES = testing devel prod slc4 slc5 sl7
+#IMAGE_FORMATS = iso hdd fat vdi vmdk tar.gz ova
+
+SIGNING_SERVER = cvm-sign01.cern.ch
+SINGING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image
+CA_BUNDLE = /etc/pki/tls/certs/cern-ca-bundle.crt
+HOST_CERT = /etc/pki/tls/certs/cvm-build09.crt
+PRIV_KEY = /etc/pki/tls/private/cvm-build09.key
+HASH_ALGO = sha256
 
 # Set to one of CERNVM_BRANCHES by main Makefile
 CERNVM_BRANCH =
