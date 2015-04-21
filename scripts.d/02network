@@ -9,7 +9,6 @@ require_package udhcpc
 #FOR:RUN
 #===========================
 
-# Logging
 log_start "Starting networking..."
 
 # Bringing up network devices
@@ -24,6 +23,4 @@ done
 # Obtain IP address
 udhcpc -qnf -t 20 -O staticroutes -O mtu >/var/log/udhcpc.log 2>&1
 
-
-# Ok
 log_ok

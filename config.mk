@@ -33,8 +33,8 @@ SIGNING_SERVER = cvm-sign01.cern.ch
 SINGING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image
 CA_BUNDLE = /etc/pki/tls/certs/cern-ca-bundle.crt
 HOST_CERT = /etc/pki/tls/certs/cvm-build09.crt
-PRIV_KEY = /etc/pki/tls/private/cvm-build09.key
-HASH_ALGO = sha256
+HOST_KEY = /etc/pki/tls/private/cvm-build09.key
+SIGNING_DN = /DC=ch/DC=cern/OU=computers/CN=cvm-sign01.cern.ch
 
 # Set to one of CERNVM_BRANCHES by main Makefile
 CERNVM_BRANCH =
