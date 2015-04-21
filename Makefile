@@ -3,6 +3,7 @@ TOP = $(shell pwd)
 include config.mk
 
 all: release
+	sha256sum -c $(IMAGE_DIR)/*.sha256
 
 release: initrd.$(UCERNVM_STRONG_VERSION) $(IMAGE_DIR)/ucernvm.$(UCERNVM_STRONG_VERSION).tar
 	for branch in $(CERNVM_BRANCHES); do \
@@ -124,27 +125,33 @@ $(IMAGE_DIR)/$(IMAGE_NAME).tar.gz: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 
 $(IMAGE_DIR)/$(IMAGE_NAME).vdi: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vdi
-	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi
+	cp $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
+	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi
 	VBoxManage modifyhd $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi --resize $$((1024*20))
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi
 	mv $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi $(IMAGE_DIR)/$(IMAGE_NAME).vdi
+	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
 
 $(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vhd
-	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME).vdi $(IMAGE_DIR)/$(IMAGE_NAME).vhd --format VHD
+	cp $(IMAGE_DIR)/$(IMAGE_NAME).vdi $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working
+	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working $(IMAGE_DIR)/$(IMAGE_NAME).vhd --format VHD
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vhd
-	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vdi
+	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working
 		
 $(IMAGE_DIR)/$(IMAGE_NAME).vmdk: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vmdk
-	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME).vdi $(IMAGE_DIR)/$(IMAGE_NAME).vmdk --format VMDK --variant Stream
+	cp $(IMAGE_DIR)/$(IMAGE_NAME).vdi $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working
+	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working $(IMAGE_DIR)/$(IMAGE_NAME).vmdk --format VMDK --variant Stream
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vmdk
-	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vdi
+	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working
 	
 $(IMAGE_DIR)/$(IMAGE_NAME).ova: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	rm -rf /root/VirtualBox\ VMs /root/.config/VirtualBox
 	rm -rf $(IMAGE_DIR)/ova-build && mkdir $(IMAGE_DIR)/ova-build
-	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/ova-build/boot.vdi
+	cp $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
+	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working $(IMAGE_DIR)/ova-build/boot.vdi
+	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
 	VBoxManage clonehd $(IMAGE_DIR)/ova-build/boot.vdi $(IMAGE_DIR)/ova-build/boot.vmdk --format VMDK --variant Stream
 	VBoxManage createhd --filename $(IMAGE_DIR)/ova-build/scratch.vmdk --size 20000 --format VMDK --variant Stream
 	rm -rf /root/VirtualBox\ VMs
