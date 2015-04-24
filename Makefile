@@ -89,7 +89,7 @@ $(IMAGE_DIR)/$(IMAGE_NAME).iso: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTR
 	rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
 	cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).xz $(CERNVM_ROOTTREE)/cernvm/vmlinuz.xz
 	mkisofs -R -o $(IMAGE_DIR)/$(IMAGE_NAME).iso.unsigned -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table $(CERNVM_ROOTTREE)
-	./sign.sh $(IMAGE_DIR)/$(IMAGE_NAME).iso.unsigned $(SINGING_URL) $(HOST_CERT) $(HOST_KEY) $(CA_BUNDLE) $(SIGNING_DN)
+	./sign.sh $(IMAGE_DIR)/$(IMAGE_NAME).iso.unsigned $(SINGING_URL) $(HOST_CERT) $(HOST_KEY) $(CA_BUNDLE) $(SIGNING_DN) $(UCERNVM_STRONG_VERSION) $(CERNVM_BRANCH) $(CERNVM_SYSTEM)
 	mv $(IMAGE_DIR)/$(IMAGE_NAME).iso.unsigned $(IMAGE_DIR)/$(IMAGE_NAME).iso
 
 $(IMAGE_DIR)/$(IMAGE_NAME).hdd: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/version
@@ -107,7 +107,7 @@ $(IMAGE_DIR)/$(IMAGE_NAME).hdd: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTR
 	losetup -d /dev/loop5
 	syslinux --install --offset 512 --active --mbr --directory /isolinux tmp/$(IMAGE_NAME).hdd
 	mv tmp/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd.unsigned
-	./sign.sh $(IMAGE_DIR)/$(IMAGE_NAME).hdd.unsigned $(SINGING_URL) $(HOST_CERT) $(HOST_KEY) $(CA_BUNDLE) $(SIGNING_DN)
+	./sign.sh $(IMAGE_DIR)/$(IMAGE_NAME).hdd.unsigned $(SINGING_URL) $(HOST_CERT) $(HOST_KEY) $(CA_BUNDLE) $(SIGNING_DN) $(UCERNVM_STRONG_VERSION) $(CERNVM_BRANCH) $(CERNVM_SYSTEM)
 	mv $(IMAGE_DIR)/$(IMAGE_NAME).hdd.unsigned $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 
 $(IMAGE_DIR)/$(IMAGE_NAME).tar.gz: $(IMAGE_DIR)/$(IMAGE_NAME).hdd

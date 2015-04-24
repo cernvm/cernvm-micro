@@ -11,6 +11,9 @@ CERT="$3"
 KEY="$4"
 CACHAIN="$5"
 DN="$6"
+UVERSION="$7"
+OS_REPO="$8"
+SNAPSHOT="$9"
 
 [ ! -z "$IMAGE" ] || { usage; exit 1; }
 [ ! -z "$URL" ] || { usage; exit 1; }
@@ -18,6 +21,20 @@ DN="$6"
 [ ! -z "$KEY" ] || { usage; exit 1; }
 [ ! -z "$CACHAIN" ] || { usage; exit 1; }
 [ ! -z "$DN" ] || { usage; exit 1; }
+[ ! -z "$UVERSION" ] || { usage; exit 1; }
+[ ! -z "$OS_REPO" ] || { usage; exit 1; }
+[ ! -z "$SNAPSHOT" ] || { usage; exit 1; }
+
+echo "--- Adding JSON meta-data to image ---"
+cat << EOF > ${IMAGE}.json-metadata
+{
+  "ucernvm-version": "${UVERSION}",
+  "os-repo": "${OS_REPO}"
+  "snapshot": "${SNAPSHOT}"
+}
+EOF
+cat ${IMAGE}.json-metadata /dev/zero | dd of=${IMAGE} conv=notrunc oflag=append bs=1 count=$((32*1024))
+rm -f ${IMAGE}.json-metadata
 
 echo "--- Sending image to sigining server ---"
 curl --data-binary @${IMAGE} --cacert ${CACHAIN} --cert ${CERT} --key ${KEY} ${URL} > ${IMAGE}.signature-response
@@ -38,9 +55,9 @@ openssl rsautl -verify -inkey ${IMAGE}.pubkey -pubin -in ${IMAGE}.signature | op
 openssl dgst -sha256 -verify ${IMAGE}.pubkey -signature ${IMAGE}.signature ${IMAGE}
 rm -f ${IMAGE}.pubkey
 
-# Create JSON artifact
-echo "--- Creating JSON artifact ---"
-cat << EOF > ${IMAGE}.json-metadata
+# Create JSON signature artifact
+echo "--- Creating JSON signature ---"
+cat << EOF > ${IMAGE}.json-signature
 {
   "certificate": "$(base64 -w0 ${IMAGE}.certificate)",
   "signature": "$(base64 -w0 ${IMAGE}.signature)",
@@ -48,9 +65,9 @@ cat << EOF > ${IMAGE}.json-metadata
     "base64 -d <certificate>",
     "base64 -d <signature>"
     "openssl verify -CAfile <CERN CA Chain cern.ch/ca> <certificate>",
-    "openssl x509 -in <certificate> -subject -noout | awk '{print $2}' == ${DN}"
+    "openssl x509 -in <certificate> -subject -noout | awk '{print \$2}' == ${DN}"
     "openssl x509 -in <certificate> -pubkey -noout > <pubkey>",
-    "openssl dgst -sha256 -verify <pubkey> -signature <signature> <image>"
+    "openssl dgst -sha256 -verify <pubkey> -signature <signature> \$(tail -c +$((32*1024)) <image>)"
   ]
 }
 EOF
@@ -58,5 +75,5 @@ rm -f ${IMAGE}.certificate ${IMAGE}.signature
 
 # Append JSON
 echo "--- Appending JSON signature to image ---"
-cat ${IMAGE}.json-metadata /dev/zero | dd of=${IMAGE} conv=notrunc oflag=append bs=1 count=$((64*1024))
-rm -f ${IMAGE}.json-metadata
+cat ${IMAGE}.json-signature /dev/zero | dd of=${IMAGE} conv=notrunc oflag=append bs=1 count=$((32*1024))
+rm -f ${IMAGE}.json-signature
