@@ -1,4 +1,5 @@
 1.18-15:
+  * JSON signature for hdd and iso images (CVM-806)
 
 1.18-14:
   * Add cernvm_inject contextualization
