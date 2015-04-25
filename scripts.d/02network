@@ -4,23 +4,51 @@
 #===========================
 
 require_package udhcpc
+require_package one_network
 
 #===========================
 #FOR:RUN
 #===========================
 
 log_start "Starting networking..."
+use_dhcp=1
 
-# Bringing up network devices
-DEVICES=$(ifconfig -a | grep '^[a-z]' | awk '{ print $1 }')
-for DEV in $DEVICES; do
-   if [ "$DEV" != "lo" ]; then
-     # MTU 1460 for Google Compute Engine
-     ifconfig $DEV mtu 1460 up
-   fi
+# Looking for static network settings in OpenNebula drive
+for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}' | sort); do
+  filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
+  if [ "x$filesystem" = "xiso9660" -o "x$filesystem" = "xvfat" ]; then
+    mkdir -p /one_mount  
+    mount -o ro -t $filesystem /dev/$P /one_mount >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      if [ -f /one_mount/context.sh ]; then
+        one_network /one_mount/context.sh
+        if [ $? -eq 0 ]; then
+          echo -n " (using static network settings)"
+          use_dhcp=0
+        fi
+        umount /one_mount
+        rmdir /one_mount
+        break
+      fi
+      umount /one_mount
+    fi
+    rmdir /one_mount
+  fi
 done
 
-# Obtain IP address
-udhcpc -qnf -t 20 -O staticroutes -O mtu >/var/log/udhcpc.log 2>&1
+if [ $use_dhcp -eq 1 ]; then
+  # Bringing up network devices
+  DEVICES=$(ifconfig -a | grep '^[a-z]' | awk '{ print $1 }')
+  for DEV in $DEVICES; do
+    if [ "$DEV" != "lo" ]; then
+      # MTU 1460 for Google Compute Engine
+      ifconfig $DEV mtu 1460 up
+    fi
+  done
+
+  # Obtain IP address
+  udhcpc -qnf -t 20 -O staticroutes -O mtu >/var/log/udhcpc.log 2>&1
+fi
 
 log_ok
+
