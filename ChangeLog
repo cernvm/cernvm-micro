@@ -1,4 +1,6 @@
 1.18-15:
+  * Support static network initialization of eth0 from OpenNebula context 
+    (CVM-705)
   * JSON signature for hdd and iso images (CVM-806)
 
 1.18-14:
