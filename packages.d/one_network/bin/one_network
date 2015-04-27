@@ -161,7 +161,27 @@ get_dev()
 gen_network_configuration()
 {
     mkdir -p /etc/sysconfig/network-scripts
+    
     export_rc_vars $CONTEXT
+    export DNS_VARIABLES="DNS $(env | sed 's/=.*$//' | grep -E '^ETH[0-9]+_DNS$' | sort)"
+    export SEARCH_VARIABLES="SEARCH_DOMAIN $(env | sed 's/=.*$//' | grep -E '^ETH[0-9]+_SEARCH_DOMAIN$' | sort)"
+    nameservers=$(
+    for var in ${DNS_VARIABLES}; do
+        value=$(eval "echo \"\${$var}\"")
+        if [ ! -z "$value" ]; then
+            echo "$value"
+        fi
+    done
+    )   
+    searchdomains=$(
+    for var in ${SEARCH_VARIABLES}; do
+        value=$(eval "echo \"\${$var}\"")
+        if [ ! -z "$value" ]; then
+            echo "$value"
+        fi
+    done
+    )
+    
     INTERFACE_MAC=$(get_interface_mac)
     CONTEXT_INTERFACES=$(get_context_interfaces)
     GATEWAY_IFACE_NUM=$(echo "$GATEWAY_IFACE" | sed 's/^ETH//')
@@ -197,6 +217,14 @@ EOT
 
         ) > /etc/sysconfig/network-scripts/ifcfg-${DEV}
 
+        if [ ! -z "$nameservers" ]; then
+            local i=1
+            for ns in $nameservers; do
+                echo "DNS${i}=${ns}" >> /etc/sysconfig/network-scripts/ifcfg-${DEV}
+                i=$((${i}+1))
+            done 
+        fi
+
     done
 }
 
@@ -206,6 +234,9 @@ configure_network()
     ip link set dev eth0 mtu 1500 address ${HWADDR}
     ip address add dev eth0 local ${IPADDR}/${NETMASK} broadcast $(ipcalc -b ${IPADDR} ${NETMASK} | cut -d= -f2)
     route add default gw ${GATEWAY} eth0
+    echo -n '' > /etc/resolv.conf
+    [[ ! -z "$DNS1" ]] && echo "nameserver $DNS1" >> /etc/resolv.conf
+    [[ ! -z "$DNS2" ]] && echo "nameserver $DNS2" >> /etc/resolv.conf
 }
 
 CONTEXT="$1"
