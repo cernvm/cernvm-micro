@@ -22,6 +22,7 @@ log_start "Loading predefined modules..."
 modprobe e100
 modprobe e1000
 modprobe pcnet32
+modprobe 8139cp
 modprobe 8139too
 
 # Load modules defined by the /etc/modules list
