@@ -231,7 +231,7 @@ EOT
 configure_network()
 {
     . /etc/sysconfig/network-scripts/ifcfg-eth0
-    ip link set dev eth0 mtu 1500 address ${HWADDR}
+    ip link set dev eth0 mtu 1500 address ${HWADDR} up
     ip address add dev eth0 local ${IPADDR}/${NETMASK} broadcast $(ipcalc -b ${IPADDR} ${NETMASK} | cut -d= -f2)
     route add default gw ${GATEWAY} eth0
     echo -n '' > /etc/resolv.conf

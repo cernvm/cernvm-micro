@@ -25,7 +25,7 @@ CERNVM_INCREASE_RELEASE = 0
 
 CERNVM_SYSTEM = HEAD
 CERNVM_BRANCHES = devel
-IMAGE_FORMATS = iso
+IMAGE_FORMATS = iso hdd
 #CERNVM_BRANCHES = testing devel prod slc4 slc5 sl7
 #IMAGE_FORMATS = iso hdd fat vdi vmdk tar.gz ova
 
