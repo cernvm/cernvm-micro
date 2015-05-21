@@ -8,10 +8,10 @@ all: $(KERNEL_DIR)/~done
 $(KERNEL_DIR)/~done:
 	rm -rf $(KERNEL_DIR)
 	mkdir -p $(KERNEL_DIR)
-	cd $(KERNEL_DIR) && curl $(KERNEL_SOURCE) > $(KERNEL_TARBALL) 2>/dev/null
-	cd $(KERNEL_DIR) && tar xfz $(KERNEL_TARBALL)
-	cd $(KERNEL_DIR) && rm -rf firmware usr && mkdir lib && mv modules lib/
-	rm -f $(KERNEL_DIR)/$(KERNEL_TARBALL)	
+	curl $(KERNEL_SOURCE) > $(KERNEL_TARBALL) 2>/dev/null
+	tar xfz $(KERNEL_TARBALL)
+	cd $(KERNEL_DIR) && rm -rf firmware-* headers-* && mv modules-*/lib . && rmdir modules-*
+	rm -f $(KERNEL_TARBALL)	
 	touch $(KERNEL_DIR)/~done
 
 clean:

@@ -98,6 +98,11 @@ if [ -f ${ROOT_RW}/aux/cvmfs_snapshot ]; then
   CVMFS_ROOT_HASH=$(head -n1 ${ROOT_RW}/aux/cvmfs_snapshot)
   CVMFS_REPOSITORY_TAG=$(tail -n1 ${ROOT_RW}/aux/cvmfs_snapshot)
 fi
+if [ -f ${ROOT_RW}/aux/cvmfs_force_tag ]; then
+  CVMFS_FRESH=1
+  CVMFS_ROOT_HASH=
+  CVMFS_REPOSITORY_TAG="$(cat ${ROOT_RW}/aux/cvmfs_force_tag)"
+fi
 
 cat <<EOF > /etc/cvmfs/config.d/${CVMFS_REPOS}.conf
 CVMFS_CACHE_BASE=${CVMFS_CACHE}

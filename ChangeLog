@@ -1,3 +1,7 @@
+2.0-1:
+  * Support ${ROOT_RW}/aux/cvmfs_force_tag for rollbacks
+  * Kernel 3.18
+
 1.18-15:
   * Add support for Realtek 8139 C+ NICs
   * Support static network initialization of eth0 from OpenNebula context 
