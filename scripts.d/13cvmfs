@@ -143,9 +143,10 @@ mount_cvmfs() {
   local nameserver=$(cat /etc/resolv.conf | grep ^nameserver | head -n1 | awk '{print $2}')
   echo -n "nameserver set ${nameserver}" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
   local active_proxy=$(xattr ${ROOT_RO} user.proxy)
-  if [ "x$active_proxy" = "xDIRECT" ]; then
-    echo -n "host probe" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
-  fi
+  # Not needed any more since Geo-API is available
+  #if [ "x$active_proxy" = "xDIRECT" ]; then
+  #  echo -n "host probe" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
+  #fi
   return $retval
 }
 
