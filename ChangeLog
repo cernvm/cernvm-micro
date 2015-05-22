@@ -1,4 +1,6 @@
 2.0-1:
+  * More roaming-friendly cvmfs settings
+  * Update cvmfs to 2.2.0 pre-release
   * Support ${ROOT_RW}/aux/cvmfs_force_tag for rollbacks
   * Kernel 3.18
 
