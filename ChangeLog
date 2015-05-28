@@ -1,3 +1,6 @@
+2.0-2:
+  * Add necessary kernel parameters for Docker
+
 2.0-1:
   * More roaming-friendly cvmfs settings
   * Update cvmfs to 2.2.0 pre-release
