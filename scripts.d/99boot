@@ -1,5 +1,14 @@
 #!/bin/sh
 #===========================
+#FOR:BUILD
+#===========================
+
+# Dropbear
+mkdir ${DESTDIR}/etc/dropbear
+echo "/bin/bash" > /etc/shells
+require_versioned_package dropbear ${DROPBEAR_STRONG_VERSION}
+
+#===========================
 #FOR:RUN
 #===========================
 
@@ -8,6 +17,10 @@ for x in $(cat /proc/cmdline); do
         cvmdebug)
                 panic Debug mode
         ;;
+	cvmssh)
+		passwd -d root
+		ifconfig -a
+		dropbear -E -B -F -R
     esac
 done
 
