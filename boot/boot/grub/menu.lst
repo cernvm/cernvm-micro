@@ -4,5 +4,5 @@ fallback 1
 
 title uCernVM UCERNVM_VERSION
 	root (hd0)
-	kernel /cernvm/vmlinuz.gzip initrd=/cernvm/initrd.img root=first noresume crashkernel=1M@16M divider=10 selinux=0 cernvm_path=cvm3 cvmfs_repos=CERNVM_REPOSITORY cvmfs_server=CERNVM_SERVER cvmfs_repository_tag=CERNVM_SYSTEM quiet systemd.show_status=1 loglevel=3
+	kernel /cernvm/vmlinuz.xz initrd=/cernvm/initrd.img root=first noresume crashkernel=1M@16M divider=10 selinux=0 cernvm_path=cvm3 cvmfs_repos=CERNVM_REPOSITORY cvmfs_server=CERNVM_SERVER cvmfs_repository_tag=CERNVM_SYSTEM quiet systemd.show_status=1 loglevel=3
 	initrd /cernvm/initrd.img
