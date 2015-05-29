@@ -3,9 +3,6 @@
 #FOR:BUILD
 #===========================
 
-# Dropbear
-mkdir ${DESTDIR}/etc/dropbear
-echo "/bin/bash" > /etc/shells
 require_versioned_package dropbear ${DROPBEAR_STRONG_VERSION}
 
 #===========================
@@ -18,6 +15,8 @@ for x in $(cat /proc/cmdline); do
                 panic Debug mode
         ;;
 	cvmssh)
+		mkdir -p /etc/dropbear
+		echo "/bin/bash" > /etc/shells
 		passwd -d root
 		ifconfig -a
 		dropbear -E -B -F -R

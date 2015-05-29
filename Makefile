@@ -177,8 +177,8 @@ $(IMAGE_DIR)/$(IMAGE_NAME).ova: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	rm -rf $(IMAGE_DIR)/ova-build
 
 $(IMAGE_DIR)/$(IMAGE_NAME).fat: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/version
-	#rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
-	#cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).gzip $(CERNVM_ROOTTREE)/cernvm/vmlinuz.gzip
+	rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
+	cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).xz $(CERNVM_ROOTTREE)/cernvm/vmlinuz.xz
 	dd if=/dev/zero of=tmp/$(IMAGE_NAME).fat bs=1024 count=20480
 	mkdosfs tmp/$(IMAGE_NAME).fat
 	mkdir tmp/mountpoint-$(IMAGE_NAME) && mount -o loop tmp/$(IMAGE_NAME).fat tmp/mountpoint-$(IMAGE_NAME)
