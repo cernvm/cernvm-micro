@@ -6,6 +6,7 @@ PACKAGES = \
   e2fsprogs \
   kexec \
   ntpclient \
+  patchelf \
   sfdisk \
   cvmfs \
   extras
