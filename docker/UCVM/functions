@@ -1,0 +1,90 @@
+
+__INFO() {
+  local MSG="$@"
+  let _log_pad=54-${#MSG}
+  echo -e "[\33[1;37mINF\33[0m] $@"
+}
+
+__DEBUG() {
+  [ "x${CERNVM_DEBUG}" = "x" ] && return
+  local MSG="$@"
+  let _log_pad=54-${#MSG}
+  echo -e "[\33[32;37mDEBUG\33[0m] $@"
+}
+
+
+__BANNER() {
+  [ "x$ENV_BANNER" != "x" ] && return 
+
+  $BB echo "***********************************"
+  $BB echo "*** Welcome to CernVM in Docker ***"
+  $BB echo "***********************************"
+
+  $BB echo
+
+  $BB echo "  -- based on uCernVM bootloader version $($BB cat /UCVM/version)"
+  
+  $BB echo
+
+  export ENV_BANNER=1
+}
+
+
+__LOAD_ENV() {
+  if [ "x${ENV_PARROT}${ENV_DEUSEXMACHINA}" = "x" ]; then
+    if [ -d "${CERNVM_ROOT}" ]; then
+      ENV_DEUSEXMACHINA=1
+    else
+      ENV_PARROT=1
+    fi
+  fi
+
+  [ "x${ENV_PARROT}" != "x" ] && . /UCVM/functions_parrot
+  [ "x${ENV_DEUSEXMACHINA}" != "x" ] && . /UCVM/functions_deusexmachina
+}
+
+
+__MKROOT() {
+  __READONLY /bin
+  __READONLY /lib
+  __READONLY /lib64
+  __READONLY /opt
+  __READONLY /sbin
+
+  __ADDTO /etc
+
+  __COPY /home
+  __COPY /root
+
+  __MKDIR /srv
+  __MKDIR /tmp
+
+  __MKDIR /usr
+  __MKDIR /usr/local
+  __READONLY /usr/bin
+  __READONLY /usr/doc
+  __READONLY /usr/etc
+  __READONLY /usr/include
+  __READONLY /usr/lib
+  __READONLY /usr/lib64
+  __READONLY /usr/libexec
+  __READONLY /usr/sbin
+  __READONLY /usr/share
+  __READONLY /usr/src
+  __READONLY /usr/vice
+
+  __MKDIR /var
+  __MKDIR /var/cache
+  __MKDIR /var/cvs
+  __MKDIR /var/db
+  __MKDIR /var/empty
+  __COPY /var/lib
+  __MKDIR /var/local
+  __MKDIR /var/lock
+  __MKDIR /var/log
+  __MKDIR /var/run
+  __COPY /var/spool
+  __COPY /var/www
+  __MKDIR /var/tmp
+}
+

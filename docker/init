@@ -1,0 +1,28 @@
+#!/UCVM/busybox bash
+#
+# This file is part of CernVM.
+#
+
+BB=/UCVM/busybox
+CERNVM_ROOT=${CERNVM_ROOT:=/cvmfs/cernvm-prod.cern.ch}
+
+. /UCVM/functions
+
+__LOAD_ENV
+
+[ -f /UCVM/pre.sh ] && . /UCVM/pre.sh
+
+__BANNER
+__INITIALIZE
+__MKROOT
+__FINALIZE
+
+. /UCVM/base_env.sh
+[ -f /UCVM/post.sh ] && . /UCVM/post.sh
+
+if [ "x$1" = "x" ]; then
+  exec /bin/bash
+else
+  exec $@
+fi
+

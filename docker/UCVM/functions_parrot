@@ -1,0 +1,57 @@
+__INITIALIZE() {
+  if [ "x$ENV_PARROT_MOUNTED" = "x" ]; then
+    __INFO "Mounting operating system $CERNVM_ROOT with parrot"
+    . /UCVM/parrot_env.sh
+  else
+    __INFO "OS mounted from parrot, continue to initialize"
+  fi
+}
+
+__FINALIZE() {
+  if [ "x$ENV_PARROT_MOUNTED" = "x" ]; then
+    export ENV_PARROT_MOUNTED=1
+    $BB mkdir -p /lib /lib64
+    $BB ln -s /UCVM/lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
+    $BB ln -s /UCVM/lib/ld-linux.so.1 /lib/ld-linux.so.1
+    $BB ln -s /UCVM/lib/ld-linux.so.2 /lib/ld-linux.so.2
+    export ENV_PARROT=1
+    LD_LIBRARY_PATH=/UCVM/lib exec /UCVM/parrot_run $PARROT_OPTIONS /init $@
+  fi
+}
+
+__READONLY() {
+  path="$1"
+  if [ "x$ENV_PARROT_MOUNTED" = "x" ]; then
+    __DEBUG link ${path} to ${CERNVM_ROOT}${path}
+    $BB mkdir -p ${path}
+    PARROT_OPTIONS="$PARROT_OPTIONS --mount=${path}=${CERNVM_ROOT}${path}"
+  fi
+}
+
+__COPY() {
+  path="$1"
+  if [ "x$ENV_PARROT_MOUNTED" != "x" ]; then
+    if [ -d "${CERNVM_ROOT}${path}" ]; then
+      __DEBUG copy from ${CERNVM_ROOT}${path} to ${path}
+      $BB cp -a "${CERNVM_ROOT}${path}" "${path}"
+    fi
+  fi
+}
+
+__ADDTO() {
+  path="$1"
+  if [ "x$ENV_PARROT_MOUNTED" != "x" ]; then
+    __DEBUG add new files from ${CERNVM_ROOT}${path} to ${path}
+    $BB mkdir -p "${path}"
+    $BB cp -a "${CERNVM_ROOT}${path}" "$($BB dirname ${path})" 2>&1 | $BB grep -v "File exists"
+  fi
+}
+
+__MKDIR() {
+  path="$1"
+  if [ "x$ENV_PARROT_MOUNTED" = "x" ]; then
+    __DEBUG create empty ${path}
+    $BB mkdir "${path}"
+  fi
+}
+
