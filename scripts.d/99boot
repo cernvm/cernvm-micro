@@ -23,6 +23,7 @@ for x in $(cat /proc/cmdline); do
     esac
 done
 
+
 # Unmount filesystems
 umount /sys
 umount /proc

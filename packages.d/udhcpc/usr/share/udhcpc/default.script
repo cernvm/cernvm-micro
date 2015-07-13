@@ -17,6 +17,8 @@ case "$1" in
 		;;
 
 	renew|bound)
+		echo "$serverid" > /var/lib/dhcp-server
+		
 		if [ "x$mtu" != "x" ]; then
 		  echo "Setting MTU on interface $interface to $mtu"
 		  ifconfig $interface mtu "$mtu" up

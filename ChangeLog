@@ -1,3 +1,6 @@
+2.0-3:
+  * Add support for CloudStack
+
 2.0-2:
   * Add cvmssh kernel command line switch
   * Use xz kernel for Amazon (PV-GRUB >= 1.04)
