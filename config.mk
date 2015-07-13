@@ -3,7 +3,7 @@ UCERNVM_VERSION = 2.1
 UCERNVM_RELEASE = $(shell cat release)
 KERNEL_VANILLA_VERSION = 3.18.13
 KERNEL_CERNVM_RELEASE = 13
-BB_UPSTREAM_VERSION = 1.20.2
+BB_UPSTREAM_VERSION = 1.23.2
 BB_RELEASE = 1
 CURL_UPSTREAM_VERSION = 7.32.0
 CURL_RELEASE = 1
@@ -30,10 +30,10 @@ EXTRAS_VERSION = 0.8
 CERNVM_INCREASE_RELEASE = 0
 
 CERNVM_SYSTEM = HEAD
-#CERNVM_BRANCHES = devel
-#IMAGE_FORMATS = hdd iso
-CERNVM_BRANCHES = testing devel prod slc4 slc5 sl7
-IMAGE_FORMATS = iso hdd fat vdi vmdk tar.gz ova
+CERNVM_BRANCHES = devel
+IMAGE_FORMATS = hdd iso
+#CERNVM_BRANCHES = testing devel prod slc4 slc5 sl7
+#IMAGE_FORMATS = iso hdd fat vdi vmdk tar.gz ova
 
 SIGNING_SERVER = cvm-sign01.cern.ch
 SINGING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image
