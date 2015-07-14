@@ -34,20 +34,12 @@ $(PARROT_BUILDPRODUCT): $(PARROT_MAKEFILE) $(PARROT_SOURCETREE)/Makefile
 
 $(PARROT_MAKEFILE): $(PARROT_CONFIGURE_PATCHED) $(LIBCVMFS_INCLUDE) $(LIBCVMFS_ARCHIVE)
 	cd $(PARROT_SOURCETREE) && ./configure \
-	  --debug \
-	  --with-cvmfs-path $$(pwd)/../$(LIBCVMFS_SOURCETREE)/pickup \
-	  --without-system-sand \
-	  --without-system-allpairs \
-	  --without-system-wavefront \
-	  --without-system-makeflow \
-	  --without-system-resource_monitor \
-	  --without-system-doc
-	git checkout Makefile
+	  --with-cvmfs-path $$(pwd)/../$(LIBCVMFS_SOURCETREE)/pickup
 
 $(PARROT_CONFIGURE_PATCHED): $(PARROT_CONFIGURE) $(PARROT_CHECKOUT_SENTINEL)
 	cat $(PARROT_CONFIGURE) | sed -e 's/config_mysql_path=auto/config_mysql_path=no/' > $(PARROT_CONFIGURE_PATCHED)
 	chmod +x $(PARROT_CONFIGURE_PATCHED)
-	cp $(PARROT_CONFIGURE_PATCHED) $(PARROT_CONFIGURE_PATCHED)
+	cp $(PARROT_CONFIGURE_PATCHED) $(PARROT_CONFIGURE)
 
 $(PARROT_CONFIGURE): | $(PARROT_SOURCETREE)
 
