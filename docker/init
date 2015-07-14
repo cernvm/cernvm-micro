@@ -4,7 +4,7 @@
 #
 
 BB=/UCVM/busybox
-CERNVM_ROOT=${CERNVM_ROOT:=/cvmfs/cernvm-prod.cern.ch}
+CERNVM_ROOT=${CERNVM_ROOT:=/cvmfs/cernvm-prod.cern.ch/cvm3}
 
 . /UCVM/functions
 
@@ -15,7 +15,7 @@ __LOAD_ENV
 __BANNER
 __INITIALIZE
 __MKROOT
-__FINALIZE
+__FINALIZE $@
 
 . /UCVM/base_env.sh
 [ -f /UCVM/post.sh ] && . /UCVM/post.sh

@@ -78,7 +78,9 @@ __MKROOT() {
   __MKDIR /var/cvs
   __MKDIR /var/db
   __MKDIR /var/empty
-  __COPY /var/lib
+  __MKDIR /var/lib
+  # TODO
+  #__COPY /var/lib
   __MKDIR /var/local
   __MKDIR /var/lock
   __MKDIR /var/log

@@ -23,7 +23,7 @@ __COPY() {
 __ADDTO() {
   path="$1"
   $BB mkdir -p "${path}"
-  $BB cp -a "${CERNVM_ROOT}${path}" "$($BB dirname ${path})"
+  $BB cp -a "${CERNVM_ROOT}${path}" "$($BB dirname ${path})" 2>&1 | $BB grep -v "File exists"
 }
 
 __MKDIR() {

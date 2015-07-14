@@ -10,12 +10,18 @@ __INITIALIZE() {
 __FINALIZE() {
   if [ "x$ENV_PARROT_MOUNTED" = "x" ]; then
     export ENV_PARROT_MOUNTED=1
+    if [ -f /UCVM/parrot_preload.tar.xz ]; then
+      __INFO Unpacking preloaded cache
+      cd / && $BB xz -c -d /UCVM/parrot_preload.tar.xz | $BB tar -xf -
+    fi
+    __INFO Loading ELF interpreters
     $BB mkdir -p /lib /lib64
-    $BB ln -s /UCVM/lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
-    $BB ln -s /UCVM/lib/ld-linux.so.1 /lib/ld-linux.so.1
-    $BB ln -s /UCVM/lib/ld-linux.so.2 /lib/ld-linux.so.2
+    LD_LIBRARY_PATH=/UCVM/lib /UCVM/parrot_run $PARROT_OPTIONS $BB bash -c \
+      "[ -f ${CERNVM_ROOT}/lib64/ld-linux-x86-64.so.2 ] && $BB cp ${CERNVM_ROOT}/lib64/ld-linux-x86-64.so.2 /lib64; \
+       [ -f ${CERNVM_ROOT}/lib/ld-linux.so.2 ] && $BB cp ${CERNVM_ROOT}/lib/ld-linux.so.2 /lib; \
+       [ -f ${CERNVM_ROOT}/lib/ld-linux.so.1 ] && $BB cp ${CERNVM_ROOT}/lib/ld-linux.so.1 /lib"
     export ENV_PARROT=1
-    LD_LIBRARY_PATH=/UCVM/lib exec /UCVM/parrot_run $PARROT_OPTIONS /init $@
+    LD_LIBRARY_PATH=/UCVM/lib exec /UCVM/parrot_run $PARROT_OPTIONS $PARROT_BINDMOUNT /init $@
   fi
 }
 
@@ -24,7 +30,7 @@ __READONLY() {
   if [ "x$ENV_PARROT_MOUNTED" = "x" ]; then
     __DEBUG link ${path} to ${CERNVM_ROOT}${path}
     $BB mkdir -p ${path}
-    PARROT_OPTIONS="$PARROT_OPTIONS --mount=${path}=${CERNVM_ROOT}${path}"
+    PARROT_BINDMOUNT="$PARROT_BINDMOUNT --mount=${path}=${CERNVM_ROOT}${path}"
   fi
 }
 
