@@ -25,6 +25,7 @@ $(BB_BUILD_PRODUCT): $(BB_MAKEFILE) $(BB_CONFIG)
 
 $(BB_MAKEFILE): $(BB_TARBALL)
 	tar -xvjf $(BB_TARBALL)
+	touch $(BB_MAKEFILE)
 
 $(BB_CONFIG): busybox-config $(BB_MAKEFILE)
 	cp busybox-config $(BB_CONFIG)
