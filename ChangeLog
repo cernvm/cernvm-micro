@@ -1,3 +1,6 @@
+2.1-1:
+  * Kernel 3.18.18, OpenAFS 1.6.11.1
+
 2.1-0:
   * Add support for CloudStack
 
