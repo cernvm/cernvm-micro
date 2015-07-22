@@ -80,6 +80,28 @@ fetch_vsphere() {
 }
 
 
+fetch_azure() {
+  mkdir -p /context_mount
+  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}' | sort); do
+    filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
+    echo "  looking for ISO image at /dev/$P ($filesystem)" >> /var/log/context.log
+    if [ "x$filesystem" = "xudf" ]; then
+      mount -o ro -t $filesystem /dev/$P /context_mount >/dev/null 2>&1
+      if [ $? -eq 0 ]; then
+        if [ -f /context_mount/E6DA6616-8EC4-48E0-BE93-58CE6ACE3CFB.tag ]; then
+          UCONTEXT_SRC="Azure"
+          cat /context_mount/CustomData.bin > ${USER_DATA} 2>/dev/null
+          umount /context_mount
+          break
+        fi
+        umount /context_mount
+      fi
+    fi
+  done
+  rmdir /context_mount
+}
+
+
 fetch_rhevm() {
   :
 }
@@ -183,7 +205,7 @@ fetch_cloudstack() {
 
 if [ ! -b "${ROOT_DEV}" ]; then
   log_start "Contextualizing VM..."
-  for data_source in configdrive opennebula vsphere rhevm gce ec2 openstack cloudstack; do
+  for data_source in configdrive opennebula vsphere azure rhevm gce ec2 openstack cloudstack; do
     [ -f ${USER_DATA} ] && break
     echo "looking for user data at $data_source" >> /var/log/context.log
     fetch_${data_source}

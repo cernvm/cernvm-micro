@@ -127,22 +127,30 @@ $(IMAGE_DIR)/$(IMAGE_NAME).tar.gz: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 $(IMAGE_DIR)/$(IMAGE_NAME).vdi: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	cp $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
+	while pgrep VBoxSVC > /dev/null; do true; done
 	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi
 	VBoxManage modifyhd $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi --resize $$((1024*20))
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi
 	mv $(IMAGE_DIR)/$(IMAGE_NAME)-inflated.vdi $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
 
-$(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
-	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vhd
-	cp $(IMAGE_DIR)/$(IMAGE_NAME).vdi $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working
-	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working $(IMAGE_DIR)/$(IMAGE_NAME).vhd --format VHD
+$(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
+	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vhd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi $(IMAGE_DIR)/$(IMAGE_NAME).hdd.workin
+	cp $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
+	while pgrep VBoxSVC > /dev/null; do true; done
+	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi
+	while pgrep VBoxSVC > /dev/null; do true; done
+	VBoxManage modifyhd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi --resize 21
+	while pgrep VBoxSVC > /dev/null; do true; done
+	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi $(IMAGE_DIR)/$(IMAGE_NAME).vhd --format VHD
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vhd
-	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working
+	rm -f $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi
+	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
 		
 $(IMAGE_DIR)/$(IMAGE_NAME).vmdk: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vmdk
 	cp $(IMAGE_DIR)/$(IMAGE_NAME).vdi $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working
+	while pgrep VBoxSVC > /dev/null; do true; done
 	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working $(IMAGE_DIR)/$(IMAGE_NAME).vmdk --format VMDK --variant Stream
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vmdk
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working
@@ -151,11 +159,13 @@ $(IMAGE_DIR)/$(IMAGE_NAME).ova: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	rm -rf /root/VirtualBox\ VMs /root/.config/VirtualBox
 	rm -rf $(IMAGE_DIR)/ova-build && mkdir $(IMAGE_DIR)/ova-build
 	cp $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
+	while pgrep VBoxSVC > /dev/null; do true; done
 	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working $(IMAGE_DIR)/ova-build/boot.vdi
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
 	VBoxManage clonehd $(IMAGE_DIR)/ova-build/boot.vdi $(IMAGE_DIR)/ova-build/boot.vmdk --format VMDK --variant Stream
 	VBoxManage createhd --filename $(IMAGE_DIR)/ova-build/scratch.vmdk --size 20000 --format VMDK --variant Stream
 	rm -rf /root/VirtualBox\ VMs
+	while pgrep VBoxSVC > /dev/null; do true; done
 	VBoxManage createvm --name "CernVM 3" --ostype Linux26_64 --register
 	VBoxManage storagectl "CernVM 3" --name SATA --add sata --portcount 4 --hostiocache on --bootable on
 	VBoxManage modifyvm "CernVM 3" --memory 1024 --vram 20 --nic1 nat --nic2 hostonly --natdnshostresolver1 on --natdnshostresolver2 on --clipboard bidirectional --draganddrop hosttoguest
