@@ -90,6 +90,7 @@ fetch_azure() {
       if [ $? -eq 0 ]; then
         if [ -f /context_mount/E6DA6616-8EC4-48E0-BE93-58CE6ACE3CFB.tag ]; then
           UCONTEXT_SRC="Azure"
+          AZURE_ISO="/dev/$P"
           cat /context_mount/CustomData.bin > ${USER_DATA} 2>/dev/null
           umount /context_mount
           break

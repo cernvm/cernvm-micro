@@ -25,6 +25,12 @@ if [ -f ${EXTRA_PICKUP} ]; then
   cp ${EXTRA_PICKUP} ${ROOT_RW}/context/pickup.tar.gz
 fi
 
+# Azure ejects the ISO image after provisioning, save it
+if [ "x${AZURE_ISO}" != "x" ]; then
+  mkdir -p ${ROOT_RW}/context
+  dd if="${AZURE_ISO}" of="${ROOT_RW}/context/azure.iso" bs=1024 > /dev/null 2>&1
+fi
+
 [ -f ${UCONTEXT} ] && . ${UCONTEXT}
 [ -f ${EXTRA_UCONTEXT} ] && . ${EXTRA_UCONTEXT}
 
