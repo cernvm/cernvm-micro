@@ -1,5 +1,7 @@
 2.2-0
-  * Kernel 3.18.19
+  * Force lazy inode initialziation
+  * e2fsprogs 1.42.12
+  * Kernel 3.18.20
   * Support for Microsoft Azure
 
 2.1-1:
