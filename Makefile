@@ -186,6 +186,9 @@ $(IMAGE_DIR)/$(IMAGE_NAME).ova: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	mv $(IMAGE_DIR)/ova-build/$(IMAGE_NAME).ova $(IMAGE_DIR)/$(IMAGE_NAME).ova
 	rm -rf $(IMAGE_DIR)/ova-build
 
+$(IMAGE_DIR)/$(IMAGE_NAME).box: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
+	./vagrant_build.sh $(IMAGE_DIR)/$(IMAGE_NAME).hdd vagrant-user-data $(IMAGE_DIR)/$(IMAGE_NAME).box
+
 $(IMAGE_DIR)/$(IMAGE_NAME).fat: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/version
 	rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
 	cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).xz $(CERNVM_ROOTTREE)/cernvm/vmlinuz.xz
