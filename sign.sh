@@ -29,8 +29,8 @@ echo "--- Adding JSON meta-data to image ---"
 cat << EOF > ${IMAGE}.json-metadata
 {
   "ucernvm-version": "${UVERSION}",
-  "os-repo": "${OS_REPO}"
-  "snapshot": "${SNAPSHOT}"
+  "os-repo": "${OS_REPO}",
+  "snapshot": "${SNAPSHOT}",
 }
 EOF
 cat ${IMAGE}.json-metadata /dev/zero | dd of=${IMAGE} conv=notrunc oflag=append bs=1 count=$((32*1024))
@@ -67,7 +67,7 @@ cat << EOF > ${IMAGE}.json-signature
     "openssl verify -CAfile <CERN CA Chain cern.ch/ca> <certificate>",
     "openssl x509 -in <certificate> -subject -noout | awk '{print \$2}' == ${DN}"
     "openssl x509 -in <certificate> -pubkey -noout > <pubkey>",
-    "openssl dgst -sha256 -verify <pubkey> -signature <signature> \$(tail -c +$((32*1024)) <image>)"
+    "openssl dgst -sha256 -verify <pubkey> -signature <signature> \$(head -c -$((32*1024)) <image>)"
   ]
 }
 EOF
