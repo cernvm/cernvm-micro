@@ -80,29 +80,6 @@ fetch_vsphere() {
 }
 
 
-fetch_azure() {
-  mkdir -p /context_mount
-  for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}' | sort); do
-    filesystem=$(blkid /dev/$P | grep -o TYPE=[^\ ]* | tr -d '"' | cut -d= -f2)
-    echo "  looking for ISO image at /dev/$P ($filesystem)" >> /var/log/context.log
-    if [ "x$filesystem" = "xudf" ]; then
-      mount -o ro -t $filesystem /dev/$P /context_mount >/dev/null 2>&1
-      if [ $? -eq 0 ]; then
-        if [ -f /context_mount/E6DA6616-8EC4-48E0-BE93-58CE6ACE3CFB.tag ]; then
-          UCONTEXT_SRC="Azure"
-          AZURE_ISO="/dev/$P"
-          cat /context_mount/CustomData.bin > ${USER_DATA} 2>/dev/null
-          umount /context_mount
-          break
-        fi
-        umount /context_mount
-      fi
-    fi
-  done
-  rmdir /context_mount
-}
-
-
 fetch_rhevm() {
   :
 }
@@ -117,8 +94,16 @@ download_userdata() {
   local retval
   echo "  connecting: nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true" >> /var/log/context.log
 
-  nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true > /dev/null 2>&1
-  if [ $? -eq 0 ]; then
+  #nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true > /dev/null 2>&1
+  
+  # first create list of IP, port, no for all servers
+ 	
+  # invoke function socket_thread( list of < IP, port, no>)
+  # output = list of IP, port, no -> yes if connected
+
+  
+  # change this part where checking the condition to one searching the list for the same IP and port
+  #if [ $? -eq 0 ]; then
     if [ "x${extra_header}" != "x" ]; then
       echo "  downloading: curl -f -s -o ${USER_DATA} ${extra_header_opt} ${extra_header} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url" >> /var/log/context.log
       curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
@@ -152,7 +137,7 @@ download_userdata() {
         rm -f ${USER_DATA}
       fi
     fi
-  fi
+  #fi
   
   # Failure
   return 1
@@ -185,32 +170,93 @@ fetch_openstack() {
   [ $? -eq 0 ] && UCONTEXT_SRC="OpenStack"
 }
 
+index=()
+get_index() { # array size, #array, value
 
-fetch_cloudstack() {
-  download_userdata 10.1.1.1 \
-    http://10.1.1.1/latest/user-data \
-    http://10.1.1.1/latest/meta-data/instance-id
-  if [ $? -eq 0 ]; then
-    UCONTEXT_SRC="CloudStack"
-  else
-    local dhcp_server=$(cat /var/lib/dhcp-server)
-    if [ "x${dhcp_server}" != "x" ]; then
-      download_userdata $dhcp_server \
-        http://${dhcp_server}/latest/user-data \
-        http://${dhcp_server}/latest/meta-data/instance-id
-      [ $? -eq 0 ] && UCONTEXT_SRC="CloudStack"
-    fi
-  fi
+	array_size=$1
+	array=()
+	arrInd=1
+	endArr=$(($arrInd + $array_size -1))
+	while [ $endArr -ge $arrInd ]
+	do
+		args=("$@")
+		array+=" ${args[$arrInd]} "
+		arrInd=$(($arrInd + 1))
+	done
+
+	value=${args[$arrInd]}
+	i=0
+	for element in ${array[@]}
+	do
+		if [[ " $element " == " $value " ]]; then
+			index+=(" ${i} ")
+		fi
+		i=$(($i + 1))
+	done
 }
-
 
 if [ ! -b "${ROOT_DEV}" ]; then
   log_start "Contextualizing VM..."
-  for data_source in configdrive opennebula vsphere azure rhevm gce ec2 openstack cloudstack; do
+  for data_source in configdrive opennebula vsphere rhevm; do
     [ -f ${USER_DATA} ] && break
     echo "looking for user data at $data_source" >> /var/log/context.log
     fetch_${data_source}
   done
+ 
+  servers=("169.254.169.254")
+  
+
+#version with yes/no answers
+
+#  exitVar="$(portprobe ${servers[@]})"
+#  #exitVar=()
+#  exitArray=()
+
+#  for element in ${exitVar[@]}; do
+#	exitArray+=(" $element ")
+#  done
+ 
+#  for element in ${exitVar[@]}; do
+#	if [[ " $element " == " yes " ]]; then
+#		get_index ${#servers[@]} ${servers[@]} 169.254.169.254
+#		index_server=${index[0]}
+#		get_index ${#exitArray[@]} ${exitArray[@]} yes
+#		index_status=$index
+#		for i in "${!index_status[@]}"; do
+#			if [[ " ${index_status[$i]} " == *" ${index_server} "* ]]; then
+#			
+#			  for data_source in gce ec2 openstack; do
+#			    [ -f ${USER_DATA} ] && break
+#			    echo "looking for user data at $data_source" >> /var/log/context.log
+#			    fetch_${data_source}
+#			  done
+#			fi
+#		done
+#	fi
+#  done
+
+
+#version with bit set to 1 if connected
+
+  result="$(portprobe ${servers[@]} 2)"
+  get_index ${#servers[@]} ${servers[@]} 169.254.169.254
+  index_server=${index[0]}
+  shiftRight=$((${#servers[@]}-$index_server-1))
+  resultSever=result
+  let "resultSever >>= $shiftRight"
+  let "resultSever &= 1"
+  
+  if [ $resultSever -neq 0 ]; then    
+    for data_source in gce ec2 openstack; do
+      [ -f ${USER_DATA} ] && break
+      echo "looking for user data at $data_source" >> /var/log/context.log
+      fetch_${data_source}
+    done
+  fi
+
+  
+  
+
   if [ -f ${USER_DATA} ]; then
     echo "found user data at $UCONTEXT_SRC" >> /var/log/context.log
     # Try to unzip
