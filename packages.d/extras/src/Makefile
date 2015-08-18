@@ -1,10 +1,14 @@
 
-EXTRA_BINARIES = resolve_aufs_conflicts xattr parse_user_data merge_accounts set_quotes
+EXTRA_BINARIES = resolve_aufs_conflicts xattr parse_user_data merge_accounts set_quotes portprobe
 
 all: $(EXTRA_BINARIES)
 
 clean:
 	rm -f $(EXTRA_BINARIES)
+
+portprobe: portprobe.c
+	gcc -O2 -Wall -o portprobe portprobe.c -lpthread
+	strip portprobe
 
 set_quotes: set_quotes.c
 	gcc -O2 -Wall -o set_quotes set_quotes.c
