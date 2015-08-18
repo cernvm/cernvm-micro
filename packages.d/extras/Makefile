@@ -7,14 +7,16 @@ EXTRAS_BINARIES = \
   extras-$(EXTRAS_STRONG_VERSION)/bin/resolve_aufs_conflicts \
   extras-$(EXTRAS_STRONG_VERSION)/bin/merge_accounts \
   extras-$(EXTRAS_STRONG_VERSION)/bin/reset_root_password \
-  extras-$(EXTRAS_STRONG_VERSION)/bin/set_quotes
+  extras-$(EXTRAS_STRONG_VERSION)/bin/set_quotes \
+  extras-$(EXTRAS_STRONG_VERSION)/bin/portprobe
 EXTRAS_BUILD_PRODUCTS = \
   src/parse_user_data \
   src/xattr \
   src/resolve_aufs_conflicts \
   src/merge_accounts \
   src/reset_root_password \
-  src/set_quotes
+  src/set_quotes \
+  src/portprobe
 
 all: $(EXTRAS_BINARIES)
 
