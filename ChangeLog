@@ -1,9 +1,12 @@
-2.2-1
+2.3-0:
+  * Add portprobe, sweepvm utility
+
+2.2-1:
   * Fix signing script
   * Add Vagrant image format (VirtualBox based)
   * Kernel built with newer toolchain (support for x32 ABI)
 
-2.2-0
+2.2-0:
   * Force lazy inode initialization
   * e2fsprogs 1.42.12
   * Kernel 3.18.20
