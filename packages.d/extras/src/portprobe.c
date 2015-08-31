@@ -1,6 +1,9 @@
 /**
- * What does it do
- * CERN...
+ * Using IP addresses and timeout as input arguments, check if the
+ * user is connected to any of them by doing that in parallel using 
+ * pthreads. If time deadline expires, return.
+ * Return value is combination of bits related to each IP address
+ * that are set to 1 if connected.
  */
 
 #include <arpa/inet.h>
@@ -31,12 +34,10 @@ pthread_mutex_t lock_return_values = PTHREAD_MUTEX_INITIALIZER;
  */
 static void *connect_to_server(void *arguments)
 {
-  // struct arg_struct *args = malloc(sizeof(struct arg_struct));
   struct arg_struct *args = (struct arg_struct *)arguments;
   struct sockaddr_in server;
   // Get the socket descriptor
   int socket_desc = args->client_socket;
-  //int sock = *(int*)socket_desc;
   char *server_address = args->server_address;
   server.sin_family = AF_INET;
   server.sin_addr.s_addr = inet_addr(server_address);
@@ -45,20 +46,14 @@ static void *connect_to_server(void *arguments)
     pthread_mutex_lock(&lock_return_values);
     return_values[args->idx] = 0;
     pthread_mutex_unlock(&lock_return_values);
-    //fprintf(stdout,"no\n");
   } else {
     pthread_mutex_lock(&lock_return_values);
     return_values[args->idx] = 1;
     pthread_mutex_unlock(&lock_return_values);
-    //fprintf(stdout,"yes\n");
+
   }
 
   return NULL;
-}
-
-
-static void usage(char *progname) {
-  printf("%s <IP 1> <IP 2> ... <timeout (s)>\n", progname);
 }
 
 
@@ -116,6 +111,5 @@ int main(int argc , char *argv[])
     now = time(NULL);
   }
 
-  printf("%d\n", result);
-  return 0;
+  return result;
 }
