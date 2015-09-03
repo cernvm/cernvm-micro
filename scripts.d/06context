@@ -15,28 +15,21 @@ UCONTEXT_SRC="(none)"
 UCONTEXT_TIMEOUT=2
 UCONTEXT_TIMEOUT_DATA=10
 UCONTEXT_RETRIES=2
-CONNECTED=0
 
 
+#function to analyze output from portprobe.c, if bit(specific IP address) = 1, connected 
+#input args: output from portprobe.c, index of the IP address
 
-#function to analyze result from portprobe.c, if bit(specific IP address) = 1, connected 
-#input args: ip, result
-
-check_connection() {  
-  ip=$1
-  result=$2
-  CONNECTED=0
-  if [[ $ip == 169.254.169.254 ]]; then    
-    index_server=0
-  else index_server=1
-  fi
-  shiftLeft=$((1-$index_server))
-  let "result <<= $shiftLeft"
-  let "result &= 2"
-  if [[ $result == 0 ]]; then
-    CONNECTED=0
+is_bit_set() {  
+  output=$1
+  index_server=$2
+  shift_left=$((1-$index_server))
+  let "output <<= $shift_left"
+  let "output &= 2"
+  if [[ $output == 0 ]]; then
+    return 0
   else
-    CONNECTED=1
+    return 1
   fi
 }
 
@@ -141,8 +134,7 @@ download_userdata() {
   local extra_header_opt=
   [ "x${extra_header}" != "x" ] && extra_header_opt="-H"
   local retval
-  echo "  connecting: nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true" >> /var/log/context.log
-
+  
     if [ "x${extra_header}" != "x" ]; then
       echo "  downloading: curl -f -s -o ${USER_DATA} ${extra_header_opt} ${extra_header} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url" >> /var/log/context.log
       curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
@@ -229,35 +221,54 @@ fetch_cloudstack() {
 
 if [ ! -b "${ROOT_DEV}" ]; then
   log_start "Contextualizing VM..."
-  for data_source in configdrive opennebula vsphere azure rhevm; do
-    [ -f ${USER_DATA} ] && break
-    echo "looking for user data at $data_source" >> /var/log/context.log
-    fetch_${data_source}
-  done
-  
-  #check connection for the first server 
-  result="$(portprobe 169.254.169.254 10.1.1.1 1)"
-  check_connection 169.254.169.254 $result
-  if [ ${CONNECTED} == 1 ]; then
-  for data_source in gce ec2 openstack; do
-      [ -f ${USER_DATA} ] && break
+  while true; do
+    for data_source in configdrive opennebula vsphere azure rhevm; do
+      [ -f ${USER_DATA} ] && break 2
       echo "looking for user data at $data_source" >> /var/log/context.log
       fetch_${data_source}
-  done
-  fi
+    done
 
-  #check connection for the second server
-  check_connection 10.1.1.1 $result
-  if [ ${CONNECTED} == 1 ]; then
-  for data_source in cloudstack; do
-      [ -f ${USER_DATA} ] && break
-      echo "looking for user data at $data_source" >> /var/log/context.log
-      fetch_${data_source}
-  done
-  fi
+    dhcp_server_present=0
+    local dhcp_server=$(cat /var/lib/dhcp-server)
+    if [ "x${dhcp_server}" != "x" ]; then
+      dhcp_server_present=1
+      connection_output="$(portprobe 169.254.169.254 10.1.1.1 ${dhcp_server} ${UCONTEXT_TIMEOUT})"
+    else 
+      connection_output="$(portprobe 169.254.169.254 10.1.1.1 ${UCONTEXT_TIMEOUT})"
+    fi
 
-  
+    #check connection for the first server and proceed if connected
+    if [ is_bit_set $connection_output 0 ]; then
+      for data_source in gce ec2 openstack; do
+        [ -f ${USER_DATA} ] && break 2
+        echo "looking for user data at $data_source" >> /var/log/context.log
+        fetch_${data_source}
+      done
+    fi
+
+    #check connection for the second server and proceed if connected
+    if [ is_bit_set $connection_output 1 ]; then
+      for data_source in cloudstack; do
+        [ -f ${USER_DATA} ] && break 2
+        echo "looking for user data at $data_source" >> /var/log/context.log
+        fetch_${data_source}
+      done
+    fi
+    
+    #check connection for the third server if its IP address is present and proceed if connected
+    if [[ $dhcp_server_present == 1 ]]; then
+      if [ is_bit_set $connection_output 2 ]; then
+        for data_source in cloudstack; do
+          [ -f ${USER_DATA} ] && break 2
+          echo "looking for user data at $data_source" >> /var/log/context.log
+          fetch_${data_source}
+        done
+      fi
+    fi
+    break
+  done
  
+
   if [ -f ${USER_DATA} ]; then
     echo "found user data at $UCONTEXT_SRC" >> /var/log/context.log
     # Try to unzip
