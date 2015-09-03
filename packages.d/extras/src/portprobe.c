@@ -57,6 +57,11 @@ static void *connect_to_server(void *arguments)
 }
 
 
+static void usage(char *progname) {
+  printf("%s <IP 1> <IP 2> ... <timeout (s)>\n", progname);
+}
+
+
 int main(int argc , char *argv[])
 {
   if (argc < 3) {
@@ -110,6 +115,7 @@ int main(int argc , char *argv[])
     }
     now = time(NULL);
   }
+
 
   return result;
 }
