@@ -15,9 +15,10 @@ __FINALIZE() {
       cd / && $BB xz -c -d /UCVM/parrot_preload.tar.xz | $BB tar -xf -
     fi
     __INFO Loading ELF interpreters
-    $BB mkdir -p /lib /lib64
+    $BB mkdir -p /lib /lib64 /libx32
     LD_LIBRARY_PATH=/UCVM/lib /UCVM/parrot_run $PARROT_OPTIONS $BB bash -c \
       "[ -f ${CERNVM_ROOT}/lib64/ld-linux-x86-64.so.2 ] && $BB cp ${CERNVM_ROOT}/lib64/ld-linux-x86-64.so.2 /lib64; \
+       [ -f ${CERNVM_ROOT}/libx32/ld-linux-x32.so.2 ] && $BB cp ${CERNVM_ROOT}/libx32/ld-linux-x32.so.2 /libx32; \
        [ -f ${CERNVM_ROOT}/lib/ld-linux.so.2 ] && $BB cp ${CERNVM_ROOT}/lib/ld-linux.so.2 /lib; \
        [ -f ${CERNVM_ROOT}/lib/ld-linux.so.1 ] && $BB cp ${CERNVM_ROOT}/lib/ld-linux.so.1 /lib"
     export ENV_PARROT=1

@@ -30,10 +30,10 @@ EXTRAS_VERSION = 1.0
 CERNVM_INCREASE_RELEASE = 0
 
 CERNVM_SYSTEM = HEAD
-CERNVM_BRANCHES = devel
-IMAGE_FORMATS = iso ova
-#CERNVM_BRANCHES = testing devel prod slc4 slc5 sl7
-#IMAGE_FORMATS = iso hdd fat vdi vhd vmdk tar.gz ova
+#CERNVM_BRANCHES = devel
+#IMAGE_FORMATS = iso ova
+CERNVM_BRANCHES = testing devel prod slc4 slc5 sl7
+IMAGE_FORMATS = iso hdd fat vdi vhd vmdk tar.gz ova box
 
 SIGNING_SERVER = cvm-sign01.cern.ch
 SINGING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image
