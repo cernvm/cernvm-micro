@@ -1,4 +1,6 @@
 2.3-0:
+  * Docker: update parrot for fix of #919
+  * Docker: look for x32 ELF interpreter
   * Add portprobe, sweepvm utility
 
 2.2-1:
