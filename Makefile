@@ -135,8 +135,16 @@ $(IMAGE_DIR)/$(IMAGE_NAME).vdi: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
 
 $(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
-	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vhd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi $(IMAGE_DIR)/$(IMAGE_NAME).hdd.workin
+	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vhd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working tmp/azure/mountpoint
+	mkdir -p tmp/azure/mountpoint
 	cp $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
+	losetup -o 512 /dev/loop5 $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
+	mount /dev/loop5 tmp/azure/mountpoint
+	cat tmp/azure/mountpoint/isolinux/syslinux.cfg | sed s/console=tty0// | sed "s/lastarg/console=ttyS0 earlyprintk=ttyS0 rootdelay=300 numa=off/" > tmp/azure/mountpoint/isolinux/syslinux.cfg~
+	mv tmp/azure/mountpoint/isolinux/syslinux.cfg~ tmp/azure/mountpoint/isolinux/syslinux.cfg
+	cat tmp/azure/mountpoint/isolinux/syslinux.cfg
+	umount tmp/azure/mountpoint && rmdir tmp/azure/mountpoint
+	losetup -d /dev/loop5
 	while pgrep VBoxSVC > /dev/null; do true; done
 	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi
 	while pgrep VBoxSVC > /dev/null; do true; done

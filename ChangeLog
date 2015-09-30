@@ -1,3 +1,13 @@
+2.3-3:
+  * Use customized command line for Azure images
+  * Update cctools
+
+2.3-2:
+  * Update cctools
+
+2.3-1:
+  * Update cctools
+
 2.3-0:
   * Docker: update parrot for fix of #919
   * Docker: look for x32 ELF interpreter
