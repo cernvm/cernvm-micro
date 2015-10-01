@@ -8,7 +8,8 @@ EXTRAS_BINARIES = \
   extras-$(EXTRAS_STRONG_VERSION)/bin/merge_accounts \
   extras-$(EXTRAS_STRONG_VERSION)/bin/reset_root_password \
   extras-$(EXTRAS_STRONG_VERSION)/bin/set_quotes \
-  extras-$(EXTRAS_STRONG_VERSION)/bin/portprobe
+  extras-$(EXTRAS_STRONG_VERSION)/bin/portprobe \
+  extras-$(EXTRAS_STRONG_VERSION)/bin/client
 EXTRAS_BUILD_PRODUCTS = \
   src/parse_user_data \
   src/xattr \
@@ -16,7 +17,8 @@ EXTRAS_BUILD_PRODUCTS = \
   src/merge_accounts \
   src/reset_root_password \
   src/set_quotes \
-  src/portprobe
+  src/portprobe \
+  src/client
 
 all: $(EXTRAS_BINARIES)
 
