@@ -116,6 +116,6 @@ int main(int argc , char *argv[])
     now = time(NULL);
   }
 
-
-  return result;
+	fprintf(stdout, "%d", result);
+  return 0;
 }
