@@ -5,6 +5,7 @@
 
 require_versioned_package busybox ${BB_STRONG_VERSION}
 require_versioned_package extras ${EXTRAS_STRONG_VERSION}
+require_package dumpstat
 
 # Expand busybox symbolic links
 echo "[INF] Expanding busybox links"
@@ -21,7 +22,8 @@ echo ${UCERNVM_STRONG_VERSION} > ${DESTDIR}/version
 #FOR:RUN
 #===========================
 # Setup variables (We don't need to export because all the scripts are fused in a single file)
-
+mkdir sc
+export ASH_SCORES=sc
 # Prepare base directories
 [ -d /dev ] || mkdir -m 0755 /dev
 [ -d /root ] || mkdir -m 0700 /root
