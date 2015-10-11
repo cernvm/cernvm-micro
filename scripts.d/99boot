@@ -23,6 +23,8 @@ for x in $(cat /proc/cmdline); do
     esac
 done
 
+# reset_root_password
+
 
 # Unmount filesystems
 umount /sys

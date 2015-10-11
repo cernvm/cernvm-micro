@@ -63,6 +63,7 @@ $(CERNVM_ROOTTREE)/version: boot initrd.$(UCERNVM_STRONG_VERSION)
 	  sed -i -e 's/KERNEL_STRONG_VERSION/$(KERNEL_STRONG_VERSION)/' $$file; \
 	  sed -i -e 's/CERNVM_REPOSITORY/$(CERNVM_REPOSITORY)/' $$file; \
 	  sed -i -e 's/CERNVM_SERVER/$(CERNVM_SERVER)/' $$file; \
+	  sed -i -e 's/CERNVM_PATH_PREFIX/$(CERNVM_PATH_PREFIX)/' $$file; \
 	  sed -i -e 's/CERNVM_SYSTEM/$(CERNVM_SYSTEM)/' $$file; \
 	done
 	cp $(CERNVM_ROOTTREE)/isolinux/isolinux.cfg $(CERNVM_ROOTTREE)/isolinux/syslinux.cfg
