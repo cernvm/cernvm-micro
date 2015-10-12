@@ -15,6 +15,7 @@ if [ $CVMFS_FRESH -eq 1 ]; then
     REBASE_ID=$(date -u -Iseconds)    
 
     log_start "Rebasing system to new version "
+    ulimit -s unlimited
     resolve_aufs_conflicts "$AUFS_RO" "$AUFS_RW" ${ROOT_RW}/aux/rebase-${REBASE_ID}.log
     echo "Rebased to ${CVMFS_ROOT_HASH}" >> ${ROOT_RW}/aux/rebase-${REBASE_ID}.log
     log_ok

@@ -1,3 +1,6 @@
+2.4-4:
+  * Fix stack limitation for aufs_resolve_conflicts
+
 2.4-2:
   * Kernel 4.1.10-6
 
