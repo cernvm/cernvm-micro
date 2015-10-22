@@ -1,5 +1,5 @@
 # Versions of components
-UCERNVM_VERSION = 2.4
+UCERNVM_VERSION = 2.5
 UCERNVM_RELEASE = $(shell cat release)
 KERNEL_VANILLA_VERSION = 3.18.21
 KERNEL_CERNVM_RELEASE = 19
@@ -31,7 +31,7 @@ CERNVM_INCREASE_RELEASE = 0
 
 CERNVM_SYSTEM = HEAD
 CERNVM_BRANCHES = prod sl7
-IMAGE_FORMATS = vhd iso
+IMAGE_FORMATS = vhd iso hdd
 #CERNVM_BRANCHES = testing devel prod slc4 slc5 sl7
 #IMAGE_FORMATS = iso hdd fat vdi vhd vmdk tar.gz ova box
 

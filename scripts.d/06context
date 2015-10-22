@@ -180,13 +180,13 @@ fetch_ec2() {
 
 fetch_openstack() {
   download_userdata 169.254.169.254 \
-    http://169.254.169.254/latest/user-data \
-    http://169.254.169.254/latest/meta-data/ami-id
+    http://169.254.169.254/openstack/2013-10-17/user-data \
+    http://169.254.169.254/2009-04-04/meta-data/ami-id
   if [ $? -eq 0 ]; then
     UCONTEXT_SRC="OpenStack"
   else
     download_userdata 169.254.169.254 \
-      http://169.254.169.254/openstack/latest/user-data \
+      http://169.254.169.254/latest/user-data \
       http://169.254.169.254/latest/meta-data/ami-id
     [ $? -eq 0 ] && UCONTEXT_SRC="OpenStack"
   fi
@@ -213,7 +213,7 @@ fetch_cloudstack() {
 
 if [ ! -b "${ROOT_DEV}" ]; then
   log_start "Contextualizing VM..."
-  for data_source in configdrive opennebula vsphere azure rhevm gce ec2 openstack cloudstack; do
+  for data_source in configdrive opennebula vsphere azure rhevm openstack gce ec2 cloudstack; do
     [ -f ${USER_DATA} ] && break
     echo "looking for user data at $data_source" >> /var/log/context.log
     fetch_${data_source}
