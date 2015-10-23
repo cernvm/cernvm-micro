@@ -153,8 +153,8 @@ $(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	while pgrep VBoxSVC > /dev/null; do true; done
 	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi $(IMAGE_DIR)/$(IMAGE_NAME).vhd --format VHD
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vhd
-	rm -f $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi
-	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
+	#rm -f $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi
+	#rm -f $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
 		
 $(IMAGE_DIR)/$(IMAGE_NAME).vmdk: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vmdk
