@@ -26,9 +26,9 @@ is_bit_set() {
   let "output <<= $shift_left"
   let "output &= 2"
   if [[ $output == 0 ]]; then
-    return 0
-  else
     return 1
+  else
+    return 0
   fi
 }
 
@@ -238,7 +238,7 @@ if [ ! -b "${ROOT_DEV}" ]; then
     fi
 
     # Check connection for EC2 compabtible server and proceed if connected
-    if [ is_bit_set $connection_output 1 ]; then
+    if is_bit_set $connection_output 0; then
       for data_source in gce ec2 openstack; do
         echo "looking for user data at $data_source" >> /var/log/context.log
         fetch_${data_source}
@@ -247,7 +247,7 @@ if [ ! -b "${ROOT_DEV}" ]; then
     fi
 
     # Check connection for CloudStack endpoint
-    if [ is_bit_set $connection_output 1 -o is_bit_set $connection_output 2 ]; then
+    if is_bit_set $connection_output 1 -o is_bit_set $connection_output 2; then
       for data_source in cloudstack; do
         echo "looking for user data at $data_source" >> /var/log/context.log
         fetch_${data_source}

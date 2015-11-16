@@ -30,8 +30,8 @@ EXTRAS_VERSION = 1.1
 CERNVM_INCREASE_RELEASE = 0
 
 CERNVM_SYSTEM = HEAD
-CERNVM_BRANCHES = prod
-IMAGE_FORMATS = vhd iso
+CERNVM_BRANCHES = sl7
+IMAGE_FORMATS = iso
 #CERNVM_BRANCHES = testing devel prod slc4 slc5 sl7
 #IMAGE_FORMATS = iso hdd fat vdi vhd vmdk tar.gz ova box
 
