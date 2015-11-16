@@ -97,9 +97,9 @@ $(IMAGE_DIR)/$(IMAGE_NAME).iso: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTR
 $(IMAGE_DIR)/$(IMAGE_NAME).hdd: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/version
 	rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
 	cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).xz $(CERNVM_ROOTTREE)/cernvm/vmlinuz.xz
-	dd if=/dev/zero of=tmp/$(IMAGE_NAME).hdd bs=1024 count=20480
+	dd if=/dev/zero of=tmp/$(IMAGE_NAME).hdd bs=1024 count=24576
 	parted -s tmp/$(IMAGE_NAME).hdd mklabel msdos
-	parted -s tmp/$(IMAGE_NAME).hdd mkpart primary fat32 0 100%
+	parted -s tmp/$(IMAGE_NAME).hdd mkpart primary fat32 0 $$((23*1024*1024))B
 	parted -s tmp/$(IMAGE_NAME).hdd set 1 boot on
 	losetup -o 512 /dev/loop5 tmp/$(IMAGE_NAME).hdd
 	mkdosfs /dev/loop5
@@ -146,13 +146,15 @@ $(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	cat tmp/azure/mountpoint/isolinux/syslinux.cfg
 	umount tmp/azure/mountpoint && rmdir tmp/azure/mountpoint
 	losetup -d /dev/loop5
-	while pgrep VBoxSVC > /dev/null; do true; done
-	VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi
-	while pgrep VBoxSVC > /dev/null; do true; done
-	VBoxManage modifyhd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi --resize 24
-	while pgrep VBoxSVC > /dev/null; do true; done
-	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi $(IMAGE_DIR)/$(IMAGE_NAME).vhd --format VHD
-	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vhd
+	qemu-img resize $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working $$((25*1024*1024))
+	qemu-img convert -f raw -o subformat=fixed -O vpc $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working $(IMAGE_DIR)/$(IMAGE_NAME).vhd
+	#while pgrep VBoxSVC > /dev/null; do true; done
+	#VBoxManage convertfromraw $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi
+	#while pgrep VBoxSVC > /dev/null; do true; done
+	#VBoxManage modifyhd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi --resize 25
+	#while pgrep VBoxSVC > /dev/null; do true; done
+	#VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi $(IMAGE_DIR)/$(IMAGE_NAME).vhd --format VHD --variant 
+	#chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vhd
 	#rm -f $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi
 	#rm -f $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
 		
@@ -201,7 +203,7 @@ $(IMAGE_DIR)/$(IMAGE_NAME).box: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 $(IMAGE_DIR)/$(IMAGE_NAME).fat: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/version
 	rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
 	cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).xz $(CERNVM_ROOTTREE)/cernvm/vmlinuz.xz
-	dd if=/dev/zero of=tmp/$(IMAGE_NAME).fat bs=1024 count=20480
+	dd if=/dev/zero of=tmp/$(IMAGE_NAME).fat bs=1024 count=24576
 	mkdosfs tmp/$(IMAGE_NAME).fat
 	mkdir tmp/mountpoint-$(IMAGE_NAME) && mount -o loop tmp/$(IMAGE_NAME).fat tmp/mountpoint-$(IMAGE_NAME)
 	cd $(CERNVM_ROOTTREE) && gtar -c --exclude=.svn -f - . .ucernvm_boot_loader | (cd ../tmp/mountpoint-$(IMAGE_NAME) && gtar -xf -)
