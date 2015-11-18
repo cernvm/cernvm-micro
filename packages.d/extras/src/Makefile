@@ -1,10 +1,14 @@
 
-EXTRA_BINARIES = resolve_aufs_conflicts xattr parse_user_data merge_accounts set_quotes portprobe sweepvm
+EXTRA_BINARIES = resolve_aufs_conflicts xattr parse_user_data merge_accounts set_quotes portprobe sweepvm pin
 
 all: $(EXTRA_BINARIES)
 
 clean:
 	rm -f $(EXTRA_BINARIES)
+
+pin: pin.c
+	gcc -O2 -Wall -o pin pin.c
+	strip pin
 
 portprobe: portprobe.c
 	gcc -O2 -Wall -o portprobe portprobe.c -lpthread

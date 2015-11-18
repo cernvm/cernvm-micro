@@ -17,11 +17,14 @@ if [ -f ${ROOT}/.ucernvm_pinfiles ]; then
       file=${file#${ROOT}}
     fi
     file="${add_prefix}$file"
-    result=$(echo -n "pin $file" | nc local:/${ROOT}/mnt/.rw/cache/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS})
-    if [ "x$result" != "xOK" ]; then
-      echo "failed pinning $file"
-    fi 
+    echo "$file" >> /dev/pinfiles
   done
-  log_ok
+  rm -f ${ROOT}/mnt/.rw/cache/pinned
+  pin ${ROOT}/mnt/.rw/cache ${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} pinned "" /dev/pinfiles
+  if [ $? -eq 0 ]; then 
+    log_ok
+  else 
+    log_fail
+  fi
 fi
 

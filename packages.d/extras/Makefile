@@ -9,7 +9,8 @@ EXTRAS_BINARIES = \
   extras-$(EXTRAS_STRONG_VERSION)/bin/reset_root_password \
   extras-$(EXTRAS_STRONG_VERSION)/bin/set_quotes \
   extras-$(EXTRAS_STRONG_VERSION)/bin/portprobe \
-  extras-$(EXTRAS_STRONG_VERSION)/bin/sweepvm
+  extras-$(EXTRAS_STRONG_VERSION)/bin/sweepvm \
+  extras-$(EXTRAS_STRONG_VERSION)/bin/pin
 EXTRAS_BUILD_PRODUCTS = \
   src/parse_user_data \
   src/xattr \
@@ -18,7 +19,8 @@ EXTRAS_BUILD_PRODUCTS = \
   src/reset_root_password \
   src/set_quotes \
   src/portprobe \
-  src/sweepvm
+  src/sweepvm \
+  src/pin
 
 all: $(EXTRAS_BINARIES)
 
