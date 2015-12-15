@@ -5,9 +5,11 @@ set -e
 HDD="$1"
 USER_DATA="$2"
 OUTPUT="$3"
+NAME="$4"
 [ -z "$HDD" ] && exit 1
 [ -z "$USER_DATA" ] && exit 1
 [ -z "$OUTPUT" ] && exit 1
+[ -z "$NAME" ] && exit 1
 
 CUR_DIR="$PWD"
 
@@ -35,7 +37,7 @@ end
 
 Vagrant.configure(2) do |config|
   config.vm.provider :virtualbox do |v|
-    v.name   = "cernvm3-vagrant"
+    v.name   = "$NAME"
     v.gui    = false
     v.memory = 1024
     v.cpus   = 2

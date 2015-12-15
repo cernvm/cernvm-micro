@@ -1,4 +1,5 @@
 2.4-5:
+  * Fast contextualization detection, pinning in background
   * Kernel 4.1.13
   * add matching mount.vmhgfs to kernel
 
