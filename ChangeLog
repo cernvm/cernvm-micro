@@ -1,3 +1,6 @@
+2.4-6:
+  * Kernel 4.1.18
+
 2.4-5:
   * Fast contextualization detection, pinning in background
   * Kernel 4.1.13
