@@ -5,17 +5,20 @@ E2FS_BINARIES = \
   e2fsprogs-$(E2FSPROGS_STRONG_VERSION)/sbin/e2fsck \
   e2fsprogs-$(E2FSPROGS_STRONG_VERSION)/sbin/mke2fs \
   e2fsprogs-$(E2FSPROGS_STRONG_VERSION)/sbin/e2label \
-  e2fsprogs-$(E2FSPROGS_STRONG_VERSION)/sbin/tune2fs
+  e2fsprogs-$(E2FSPROGS_STRONG_VERSION)/sbin/tune2fs \
+  e2fsprogs-$(E2FSPROGS_STRONG_VERSION)/sbin/resize2fs
 E2FS_STRIPPED = \
   $(E2FSPROGS_SOURCETREE)/e2fsck/e2fsck-stripped \
   $(E2FSPROGS_SOURCETREE)/misc/mke2fs-stripped \
   $(E2FSPROGS_SOURCETREE)/misc/e2label-stripped \
-  $(E2FSPROGS_SOURCETREE)/misc/tune2fs-stripped
+  $(E2FSPROGS_SOURCETREE)/misc/tune2fs-stripped \
+  $(E2FSPROGS_SOURCETREE)/resize/resize2fs-stripped
 E2FS_BUILD_PRODUCTS = \
   $(E2FSPROGS_SOURCETREE)/e2fsck/e2fsck \
   $(E2FSPROGS_SOURCETREE)/misc/mke2fs \
   $(E2FSPROGS_SOURCETREE)/misc/e2label \
-  $(E2FSPROGS_SOURCETREE)/misc/tune2fs
+  $(E2FSPROGS_SOURCETREE)/misc/tune2fs \
+  $(E2FSPROGS_SOURCETREE)/resize/resize2fs
 E2FS_MAKEFILE = $(E2FSPROGS_SOURCETREE)/Makefile
 E2FS_CONFIGURE = $(E2FSPROGS_SOURCETREE)/configure
 
@@ -30,6 +33,7 @@ $(E2FS_BINARIES): $(E2FS_STRIPPED)
 	cp $(E2FSPROGS_SOURCETREE)/misc/mke2fs-stripped e2fsprogs-$(E2FSPROGS_STRONG_VERSION)/sbin/mke2fs
 	cp $(E2FSPROGS_SOURCETREE)/misc/e2label-stripped e2fsprogs-$(E2FSPROGS_STRONG_VERSION)/sbin/e2label
 	cp $(E2FSPROGS_SOURCETREE)/misc/tune2fs-stripped e2fsprogs-$(E2FSPROGS_STRONG_VERSION)/sbin/tune2fs
+	cp $(E2FSPROGS_SOURCETREE)/resize/resize2fs-stripped e2fsprogs-$(E2FSPROGS_STRONG_VERSION)/sbin/resize2fs
 
 $(E2FS_STRIPPED): $(E2FS_BUILD_PRODUCTS)
 	cp $(E2FSPROGS_SOURCETREE)/e2fsck/e2fsck $(E2FSPROGS_SOURCETREE)/e2fsck/e2fsck-stripped
@@ -40,6 +44,8 @@ $(E2FS_STRIPPED): $(E2FS_BUILD_PRODUCTS)
 	strip $(E2FSPROGS_SOURCETREE)/misc/e2label-stripped
 	cp $(E2FSPROGS_SOURCETREE)/misc/tune2fs $(E2FSPROGS_SOURCETREE)/misc/tune2fs-stripped
 	strip $(E2FSPROGS_SOURCETREE)/misc/tune2fs-stripped
+	cp $(E2FSPROGS_SOURCETREE)/resize/resize2fs $(E2FSPROGS_SOURCETREE)/resize/resize2fs-stripped
+	strip $(E2FSPROGS_SOURCETREE)/resize/resize2fs-stripped
 
 $(E2FS_BUILD_PRODUCTS): $(E2FS_MAKEFILE)
 	$(MAKE) -j4 -C $(E2FSPROGS_SOURCETREE)

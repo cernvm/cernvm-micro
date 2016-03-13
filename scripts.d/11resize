@@ -1,0 +1,41 @@
+#!/bin/sh
+#===========================
+#FOR:BUILD
+#===========================
+
+require_versioned_package parted ${PARTED_STRONG_VERSION}
+
+#===========================
+#FOR:RUN
+#===========================
+
+
+if [ -f ${ROOT_RW}/aux/resize ]; then
+  log_start "Resizing root partition $(readlink /dev/disk/by-label/UROOT)..."
+  umount ${ROOT_RW}
+  partid=$(echo $(readlink /dev/disk/by-label/UROOT) | tr -cd [0-9] | tail -c1)
+  partdev="/dev/$(basename $(readlink /dev/disk/by-label/UROOT) | tr -d [0-9])"
+  parted -s $partdev resizepart $partid 100% 2>/dev/null
+  if [ $? -eq 0 ]; then
+    log_ok
+    log_start "Resizing file system..."
+    e2fsck -fp ${ROOT_DEV} >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      resize2fs ${ROOT_DEV} >/dev/null 2>&1
+      if [ $? -eq 0 ]; then
+        log_ok
+      else
+        log_fail
+      fi
+    else
+      log_fail
+    fi
+  else
+    log_fail
+  fi  
+
+  mount ${ROOT_DEV} ${ROOT_RW}
+  [ $? -ne 0 ] && panic "Unable to remount root device ${ROOT_DEV}!"
+  rm -f ${ROOT_RW}/aux/resize
+fi
+
