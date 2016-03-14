@@ -1,4 +1,5 @@
 2.4-6:
+  * Fix spurious udev error message
   * Resize root partition if /root.rw/aux/resize is present
   * Add parted
   * Add resize2fs utility
