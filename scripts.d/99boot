@@ -30,6 +30,7 @@ done
 umount /sys
 umount /proc
 umount /dev/pts
+rmdir /dev/pts  # Avoid spurious error message from udev
 # Cannot unmount /dev because of /dev/fuse!
 
 # Prepare the pivot point

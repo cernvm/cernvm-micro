@@ -9,5 +9,6 @@ PACKAGES = \
   parrot \
   patchelf \
   sfdisk \
+  parted \
   cvmfs \
   extras

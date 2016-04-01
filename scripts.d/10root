@@ -79,7 +79,7 @@ if [ ! -b "${ROOT_DEV}" ]; then
     log_start "Formatting /dev/${FIRST_EMPTY_PARTITION}..."
     /sbin/mke2fs -t ext4 -j -L UROOT -E lazy_itable_init /dev/${FIRST_EMPTY_PARTITION} >/var/log/partition.log 2>&1 
     [ $? -ne 0 ] && panic "Unable to create ext4 filesystem in /dev/${FIRST_EMPTY_PARTITION}"
-    /sbin/tune2fs -O has_journal -o journal_data -c0 -i0 /dev/${FIRST_EMPTY_PARTITION} >/dev/null 2>/dev/null
+    /sbin/tune2fs -O has_journal -c0 -i0 /dev/${FIRST_EMPTY_PARTITION} >/dev/null 2>/dev/null
     [ $? -ne 0 ] && panic "Unable to tune ext4 filesystem in /dev/${FIRST_EMPTY_PARTITION}"
     sync_block
     log_ok

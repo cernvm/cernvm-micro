@@ -1,0 +1,3 @@
+PARTED_SOURCETREE = parted-$(PARTED_VERSION)
+PARTED_TARBALL = parted-$(PARTED_UPSTREAM_VERSION).tar.xz
+PARTED_SOURCE = https://ftp.gnu.org/gnu/parted/$(PARTED_TARBALL)

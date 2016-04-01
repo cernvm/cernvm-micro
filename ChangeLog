@@ -1,5 +1,19 @@
+2.6-0:
+  * Fix spurious udev error message
+  * Resize root partition if /root.rw/aux/resize is present
+  * Add parted
+  * Add resize2fs utility
+  * Kernel 4.1.20
+  * Bump package versions:
+    curl 7.48.0, dropbear 2016.73, kexec 2.0.12, sfdisk 2.27
+
 2.5-0:
   * Rollback to kernel 3.18
+
+2.4-5:
+  * Fast contextualization detection, pinning in background
+  * Kernel 4.1.13
+  * add matching mount.vmhgfs to kernel
 
 2.4-4:
   * Fix stack limitation for aufs_resolve_conflicts

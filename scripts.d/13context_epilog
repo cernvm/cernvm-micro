@@ -10,6 +10,12 @@
 UCONTEXT=${ROOT_RW}/context/ucontext
 EXTRA_UCONTEXT=${ROOT_RW}/context/extra-ucontext
 
+if [ -f ${USER_DATA} ]; then
+  mkdir -p ${ROOT_RW}/context
+  cp ${USER_DATA} ${ROOT_RW}/context/user-data
+  echo "$UCONTEXT_SRC" > ${ROOT_RW}/context/source 
+fi
+
 if [ -f ${UCONTEXT_TMP} ]; then
   mkdir -p ${ROOT_RW}/context
   mv ${UCONTEXT_TMP} ${UCONTEXT}

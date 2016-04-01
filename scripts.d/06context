@@ -16,6 +16,23 @@ UCONTEXT_TIMEOUT=2
 UCONTEXT_TIMEOUT_DATA=10
 UCONTEXT_RETRIES=2
 
+
+# Function to analyze output from portprobe.c, if bit(specific IP address) = 1, connected 
+# input args: output from portprobe.c, index of the IP address
+is_bit_set() {  
+  output=$1
+  index_server=$2
+  shift_left=$((1-$index_server))
+  let "output <<= $shift_left"
+  let "output &= 2"
+  if [[ $output == 0 ]]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
+
 fetch_configdrive() {
   mkdir -p /context_mount
   for P in $(cat /proc/partitions | tail -n+3 | awk '{print $4}' | sort); do
@@ -115,42 +132,38 @@ download_userdata() {
   local extra_header_opt=
   [ "x${extra_header}" != "x" ] && extra_header_opt="-H"
   local retval
-  echo "  connecting: nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true" >> /var/log/context.log
 
-  nc -w ${UCONTEXT_TIMEOUT} $server 80 -e /bin/true > /dev/null 2>&1
-  if [ $? -eq 0 ]; then
+  if [ "x${extra_header}" != "x" ]; then
+    echo "  downloading: curl -f -s -o ${USER_DATA} ${extra_header_opt} ${extra_header} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url" >> /var/log/context.log
+    curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
+    retval=$?
+  else
+    echo "  downloading: curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url" >> /var/log/context.log
+    curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
+    retval=$?
+  fi
+  if [ $retval -eq 0 ]; then
+    return 0
+  else
+    rm -f ${USER_DATA}
+  fi
+
+  # Check if there are meta-data but no user data
+  if [ "x$meta_url" != "x" ]; then
     if [ "x${extra_header}" != "x" ]; then
-      echo "  downloading: curl -f -s -o ${USER_DATA} ${extra_header_opt} ${extra_header} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url" >> /var/log/context.log
-      curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
+      echo "  downloading: curl -f -s -o ${USER_DATA} ${extra_header_opt} ${extra_header} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url" >> /var/log/context.log
+      curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
       retval=$?
     else
-      echo "  downloading: curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url" >> /var/log/context.log
-      curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $url
+      echo "  downloading: curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url" >> /var/log/context.log
+      curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
       retval=$?
     fi
     if [ $retval -eq 0 ]; then
+      cat /dev/null > ${USER_DATA}
       return 0
     else
       rm -f ${USER_DATA}
-    fi
-
-    # Check if there are meta-data but no user data
-    if [ "x$meta_url" != "x" ]; then
-      if [ "x${extra_header}" != "x" ]; then
-        echo "  downloading: curl -f -s -o ${USER_DATA} ${extra_header_opt} ${extra_header} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url" >> /var/log/context.log
-        curl -f -s -o ${USER_DATA} ${extra_header_opt} "${extra_header}" --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
-        retval=$?
-      else
-        echo "  downloading: curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url" >> /var/log/context.log
-        curl -f -s -o ${USER_DATA} --connect-timeout ${UCONTEXT_TIMEOUT_DATA} $meta_url
-        retval=$?
-      fi
-      if [ $retval -eq 0 ]; then
-        cat /dev/null > ${USER_DATA}
-        return 0
-      else
-        rm -f ${USER_DATA}
-      fi
     fi
   fi
   
@@ -213,11 +226,46 @@ fetch_cloudstack() {
 
 if [ ! -b "${ROOT_DEV}" ]; then
   log_start "Contextualizing VM..."
-  for data_source in configdrive opennebula vsphere azure rhevm openstack gce ec2 cloudstack; do
-    [ -f ${USER_DATA} ] && break
-    echo "looking for user data at $data_source" >> /var/log/context.log
-    fetch_${data_source}
+  
+  while true; do
+    # Start with contextualization sources that don't require network
+    for data_source in configdrive opennebula vsphere azure rhevm; do
+      echo "looking for user data at $data_source" >> /var/log/context.log
+      fetch_${data_source}
+      [ -f ${USER_DATA} ] && break 2
+    done
+
+    dhcp_server_present=0
+    connection_output= 
+    local dhcp_server=$(cat /var/lib/dhcp-server)
+    if [ "x${dhcp_server}" != "x" ]; then
+      dhcp_server_present=1
+      connection_output="$(portprobe 169.254.169.254 10.1.1.1 ${dhcp_server} ${UCONTEXT_TIMEOUT})"
+    else
+      connection_output="$(portprobe 169.254.169.254 10.1.1.1 ${UCONTEXT_TIMEOUT})"
+    fi
+
+    # Check connection for EC2 compabtible server and proceed if connected
+    if is_bit_set $connection_output 0; then
+      for data_source in openstack gce ec2; do
+        echo "looking for user data at $data_source" >> /var/log/context.log
+        fetch_${data_source}
+        [ -f ${USER_DATA} ] && break 2
+      done
+    fi
+
+    # Check connection for CloudStack endpoint
+    if is_bit_set $connection_output 1 -o is_bit_set $connection_output 2; then
+      for data_source in cloudstack; do
+        echo "looking for user data at $data_source" >> /var/log/context.log
+        fetch_${data_source}
+        [ -f ${USER_DATA} ] && break 2
+      done
+    fi
+
+    break
   done
+
   if [ -f ${USER_DATA} ]; then
     echo "found user data at $UCONTEXT_SRC" >> /var/log/context.log
     # Try to unzip
