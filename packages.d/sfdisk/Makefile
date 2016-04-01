@@ -25,12 +25,13 @@ $(SFDISK_BUILD_PRODUCT): $(SFDISK_MAKEFILE)
 
 $(SFDISK_MAKEFILE): $(SFDISK_CONFIGURE)
 	cd $(SFDISK_SOURCETREE) && ./configure \
-	  --disable-libuuid \
+	  --enable-libfdisk \
+	  --enable-libuuid \
 	  --disable-libblkid \
 	  --disable-libmount \
 	  --disable-mount \
 	  --disable-losetup \
-	  --disable-cytune \
+	  --disable-zramctl \
 	  --disable-fsck \
 	  --disable-partx \
 	  --disable-uuidd \
@@ -43,12 +44,13 @@ $(SFDISK_MAKEFILE): $(SFDISK_CONFIGURE)
 	  --disable-agetty \
 	  --disable-cramfs \
 	  --disable-bfs \
+	  --disable-minix \
 	  --disable-fdformat \
 	  --disable-hwclock \
 	  --disable-wdctl \
+	  --disable-cal \
 	  --disable-switch_root \
 	  --disable-pivot_root \
-	  --disable-elvtune \
 	  --disable-tunelp \
 	  --disable-kill \
 	  --disable-last \
@@ -61,6 +63,7 @@ $(SFDISK_MAKEFILE): $(SFDISK_CONFIGURE)
 	  --disable-vipw \
 	  --disable-newgrp \
 	  --disable-login \
+	  --disable-nologin \
 	  --disable-sulogin \
 	  --disable-su \
 	  --disable-runuser \
