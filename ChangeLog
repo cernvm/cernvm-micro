@@ -4,6 +4,8 @@
   * Add parted
   * Add resize2fs utility
   * Kernel 4.1.19
+  * Bump package versions: 
+    curl 7.48.0, dropbear 2016.73, kexec 2.0.12, sfdisk 2.27
 
 2.4-5:
   * Fast contextualization detection, pinning in background
