@@ -1,4 +1,5 @@
 2.6-0:
+  * Use default data=ordered for scratch partition
   * Fix spurious udev error message
   * Resize root partition if /root.rw/aux/resize is present
   * Add parted
