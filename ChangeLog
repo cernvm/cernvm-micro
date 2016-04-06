@@ -1,5 +1,6 @@
 2.6-1:
   * Kernel 4.1.21
+  * Parse cvmfs proxy from glideinWMS user data
 
 2.6-0:
   * Use default data=ordered for scratch partition

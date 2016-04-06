@@ -277,6 +277,19 @@ if [ ! -b "${ROOT_DEV}" ]; then
       rm -f ${USER_DATA}~
     fi
     cat ${USER_DATA} | parse_user_data > ${UCONTEXT_TMP}
+
+    # CMS currently cannot generate ucernvm context snippets.
+    # Parse cvmfs settings from glidein proxy
+    if grep -q '.*####.*####.*' ${USER_DATA}; then
+      glidein_startup="$(cat ${USER_DATA} | cut -d'#' -f 1 | base64 -d | grep ^args | head -n 1)"
+      cernvm_cms_proxy="$(echo $glidein_startup | grep param_CERNVM_CMS_PROXY | sed -r 's/.* -param_CERNVM_CMS_PROXY ([^ ]+).*/\1/')"
+      if [ x"$cernvm_cms_proxy" != "x" ]; then
+        log_start "applying cvmfs settings from glideinWMS user data..."
+        echo "_UCONTEXT_CVMFS_HTTP_PROXY=${cernvm_cms_proxy}" >> ${UCONTEXT_TMP} 
+        log_ok
+      fi
+    fi
+
     . ${UCONTEXT_TMP}
   fi
   
