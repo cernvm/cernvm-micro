@@ -284,7 +284,7 @@ if [ ! -b "${ROOT_DEV}" ]; then
       glidein_startup="$(cat ${USER_DATA} | cut -d'#' -f 1 | base64 -d | grep ^args | head -n 1)"
       cernvm_cms_proxy="$(echo $glidein_startup | grep param_CERNVM_CMS_PROXY | sed -r 's/.* -param_CERNVM_CMS_PROXY ([^ ]+).*/\1/')"
       if [ x"$cernvm_cms_proxy" != "x" ]; then
-        log_start "applying cvmfs settings from glideinWMS user data..."
+        echo "applying cvmfs settings from glideinWMS user data" >> /var/log/context.log
         echo "_UCONTEXT_CVMFS_HTTP_PROXY=${cernvm_cms_proxy}" >> ${UCONTEXT_TMP} 
         log_ok
       fi
