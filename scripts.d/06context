@@ -286,7 +286,6 @@ if [ ! -b "${ROOT_DEV}" ]; then
       if [ x"$cernvm_cms_proxy" != "x" ]; then
         echo "applying cvmfs settings from glideinWMS user data" >> /var/log/context.log
         echo "_UCONTEXT_CVMFS_HTTP_PROXY=${cernvm_cms_proxy}" >> ${UCONTEXT_TMP} 
-        log_ok
       fi
     fi
 
