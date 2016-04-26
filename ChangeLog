@@ -1,4 +1,5 @@
 2.6-4:
+  * Fix vagrant build
   * Kernel 4.1.22
 
 2.6-3:
