@@ -1,7 +1,9 @@
 2.6-4:
+  * Fix vmhgfs mount helper overwrite
   * Use log_buf_len=4M option to make udev happy
   * Fix vagrant build
-  * Kernel 4.1.22
+  * OpenAFS 1.6.17
+  * Kernel 4.1.23
 
 2.6-3:
   * Fix parsing of glideinWMS proxy name 
