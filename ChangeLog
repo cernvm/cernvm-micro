@@ -1,4 +1,5 @@
 2.6-4:
+  * Update parrot to 5.4.12
   * Fix vmhgfs mount helper overwrite
   * Use log_buf_len=4M option to make udev happy
   * Fix vagrant build
