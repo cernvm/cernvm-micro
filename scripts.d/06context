@@ -283,9 +283,14 @@ if [ ! -b "${ROOT_DEV}" ]; then
     if grep -q '.*####.*####.*' ${USER_DATA}; then
       glidein_startup="$(cat ${USER_DATA} | cut -d'#' -f 1 | base64 -d | grep ^args | head -n 1)"
       cernvm_cms_proxy="$(echo $glidein_startup | grep param_CERNVM_CMS_PROXY | sed -r 's/.* -param_CERNVM_CMS_PROXY ([^ ]+).*/\1/' | sed 's/.semicolon,/;/g' | sed 's/\.colon,/:/g' | sed 's/.pipe,/|/g' | sed 's/.minus,/-/g' | sed 's/.dot,/./g')"
+      cernvm_pac_urls="$(echo $glidein_startup | grep param_CERNVM_CMS_PAC_URLS | sed -r 's/.* -param_CERNVM_CMS_PAC_URLS ([^ ]+).*/\1/' | sed 's/.semicolon,/;/g' | sed 's/\.colon,/:/g' | sed 's/.pipe,/|/g' | sed 's/.minus,/-/g' | sed 's/.dot,/./g')"
       if [ x"$cernvm_cms_proxy" != "x" ]; then
-        echo "applying cvmfs settings from glideinWMS user data" >> /var/log/context.log
+        echo "applying cvmfs settings (proxy) from glideinWMS user data" >> /var/log/context.log
         echo "_UCONTEXT_CVMFS_HTTP_PROXY=${cernvm_cms_proxy}" >> ${UCONTEXT_TMP} 
+      fi
+      if [ x"$cernvm_pac_urls" != "x" ]; then
+        echo "applying cvmfs settings (pac urls) from glideinWMS user data" >> /var/log/context.log
+        echo "_UCONTEXT_CVMFS_PAC_URLS=${cernvm_pac_urls}" >> ${UCONTEXT_TMP}
       fi
     fi
 

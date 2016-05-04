@@ -1,3 +1,6 @@
+2.6-5:
+  * Parse CERNVM_CMS_PAC_URLS from glideinWMS user data 
+
 2.6-4:
   * Update parrot to 5.4.12
   * Fix vmhgfs mount helper overwrite
