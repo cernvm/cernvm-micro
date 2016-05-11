@@ -127,6 +127,7 @@ The following key-value pairs are recognized:
 |cvmfs_branch     | The repository name               | The url is currently fixed to hepvm.cern.ch      |
 |cvmfs_tag        | The snapshot name                 | For long-term data preservation                  |
 |cernvm_inject    | Base64 encoded .tar.gz ball       | Extracted in the root tree (without leading /)   |
+|useglideinWMS    | on/off (default: on)              | Set off to stop glidinwms user data auto detect  |
 
 
 ### Extra User Data
