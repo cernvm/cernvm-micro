@@ -224,6 +224,28 @@ fetch_cloudstack() {
 }
 
 
+glideinwms_detect() {
+  local user_data="$1"
+
+  if [ "x$_UCONTEXT_USEGLIDEINWMS" = "x0" ]; then
+    echo "glideinWMS autodetect disabled by configuration, skipping" >> /var/log/context.log
+    return 1
+  fi
+  
+  if [ $(cat ${user_data} | wc -l) -gt 2 ]; then
+    # Too many lines, glideinwms is a single line, checking for one more line as a safe guard
+    return 1
+  fi
+
+  if ! grep -q '[^#]*#### -cluster [0-9]* -subcluster [0-9]*####[^#\n]*' ${user_data}; then
+    # Wrong format
+    return 1
+  fi
+
+  return 0
+}
+
+
 if [ ! -b "${ROOT_DEV}" ]; then
   log_start "Contextualizing VM..."
   
@@ -278,9 +300,11 @@ if [ ! -b "${ROOT_DEV}" ]; then
     fi
     cat ${USER_DATA} | parse_user_data > ${UCONTEXT_TMP}
 
+    . ${UCONTEXT_TMP}
+
     # CMS currently cannot generate ucernvm context snippets.
     # Parse cvmfs settings from glidein proxy
-    if grep -q '.*####.*####.*' ${USER_DATA}; then
+    if glideinwms_detect ${USER_DATA}; then
       glidein_startup="$(cat ${USER_DATA} | cut -d'#' -f 1 | base64 -d | grep ^args | head -n 1)"
       cernvm_cms_proxy="$(echo $glidein_startup | grep param_CERNVM_CMS_PROXY | sed -r 's/.* -param_CERNVM_CMS_PROXY ([^ ]+).*/\1/' | sed 's/.semicolon,/;/g' | sed 's/\.colon,/:/g' | sed 's/.pipe,/|/g' | sed 's/.minus,/-/g' | sed 's/.dot,/./g')"
       cernvm_pac_urls="$(echo $glidein_startup | grep param_CERNVM_CMS_PAC_URLS | sed -r 's/.* -param_CERNVM_CMS_PAC_URLS ([^ ]+).*/\1/' | sed 's/.semicolon,/;/g' | sed 's/\.colon,/:/g' | sed 's/.pipe,/|/g' | sed 's/.minus,/-/g' | sed 's/.dot,/./g')"
@@ -292,9 +316,13 @@ if [ ! -b "${ROOT_DEV}" ]; then
         echo "applying cvmfs settings (pac urls) from glideinWMS user data" >> /var/log/context.log
         echo "_UCONTEXT_CVMFS_PAC_URLS=${cernvm_pac_urls}" >> ${UCONTEXT_TMP}
       fi
-    fi
 
-    . ${UCONTEXT_TMP}
+      # This can be picked up later on
+      cp ${USER_DATA} /glideinwms-user-data
+
+      # Parse again with extracted proxy information
+      . ${UCONTEXT_TMP}
+    fi
   fi
   
   log_info ${UCONTEXT_SRC}
