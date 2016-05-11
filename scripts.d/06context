@@ -232,8 +232,8 @@ glideinwms_detect() {
     return 1
   fi
   
-  if [ $(cat ${user_data} | wc -l) -gt 2 ]; then
-    # Too many lines, glideinwms is a single line, checking for one more line as a safe guard
+  if [ $(cat ${user_data} | wc -l) -gt 1 ]; then
+    # Too many lines, glideinwms user-data is a single line
     return 1
   fi
 
