@@ -194,7 +194,7 @@ fetch_ec2() {
 fetch_openstack() {
   download_userdata 169.254.169.254 \
     http://169.254.169.254/openstack/2013-10-17/user_data \
-    http://169.254.169.254/2009-04-04/meta-data/ami-id
+    http://169.254.169.254/openstack/2013-10-17/meta_data.json
   if [ $? -eq 0 ]; then
     UCONTEXT_SRC="OpenStack"
   else

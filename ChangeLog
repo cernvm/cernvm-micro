@@ -1,3 +1,6 @@
+2.6-8:
+  * Fix OpenStack URL in contextualization script
+
 2.6-7:
   * Kernel 4.1.24
 
