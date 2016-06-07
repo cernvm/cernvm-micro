@@ -43,6 +43,9 @@ sync_block() {
         [ $IS_PARTITION -eq 1 ] && [ -f /sys/block/${DEV}/removable ] && \
             [ "x$(cat /sys/block/${DEV}/removable)" = "x1" ] && IS_REMOVABLE=1
         #echo "sync_block: IS_PARTITION $IS_PARTITION, HOSTING_DISK: $HOSTING_DISK, IS_ON_DISK: $IS_ON_DISK"
+        IS_READONLY=0
+        [ $IS_READONLY -eq 1 ] && [ -f /sys/block/${DEV}/ro ] && \
+            [ "x$(cat /sys/block/${DEV}/ro)" = "x1" ] && IS_READONLY=1
 
         # Fetch label and update /dev/disk/...
         if [ $IS_PARTITION -eq 1 ]; then
@@ -52,6 +55,10 @@ sync_block() {
 
         # Skip removable devices
         if [ $IS_REMOVABLE -eq 1 ]; then
+            continue;
+        fi
+        # Skip read only devices
+        if [ $IS_READONLY -eq 1 ]; then
             continue;
         fi
 
