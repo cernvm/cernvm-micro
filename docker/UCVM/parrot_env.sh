@@ -13,7 +13,8 @@ atlas-condb.cern.ch:url=http://cvmfs-stratum-one.cern.ch/cvmfs/atlas-condb.cern.
 cms.cern.ch:url=http://cvmfs-stratum-one.cern.ch/cvmfs/cms.cern.ch,pubkey=/UCVM/keys/cern.ch.pub \
 lhcb.cern.ch:url=http://cvmfs-stratum-one.cern.ch/cvmfs/lhcb.cern.ch,pubkey=/UCVM/keys/cern.ch.pub \
 sft.cern.ch:url=http://cvmfs-stratum-one.cern.ch/cvmfs/sft.cern.ch,pubkey=/UCVM/keys/cern.ch.pub \
-grid.cern.ch:url=http://cvmfs-stratum-one.cern.ch/cvmfs/grid.cern.ch,pubkey=/UCVM/keys/cern.ch.pub"
+grid.cern.ch:url=http://cvmfs-stratum-one.cern.ch/cvmfs/grid.cern.ch,pubkey=/UCVM/keys/cern.ch.pub \
+clicdp.cern.ch:url=http://cvmfs-stratum-one.cern.ch/cvmfs/clicdp.cern.ch,pubkey=/UCVM/keys/cern-it1.cern.ch.pub"
 if [ -f /UCVM/PARROT_CVMFS_REPO ]; then
   export PARROT_CVMFS_REPO="${PARROT_CVMFS_REPO} $($BB cat /UCVM/PARROT_CVMFS_REPO)"
 fi
