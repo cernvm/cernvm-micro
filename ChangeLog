@@ -1,3 +1,7 @@
+2.6-9:
+  * Update parrot
+  * Use --fake-setuid in parrot
+
 2.6-8:
   * Fix OpenStack URL in contextualization script
 

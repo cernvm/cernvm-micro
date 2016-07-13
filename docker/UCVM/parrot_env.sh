@@ -18,6 +18,7 @@ clicdp.cern.ch:url=http://cvmfs-stratum-one.cern.ch/cvmfs/clicdp.cern.ch,pubkey=
 if [ -f /UCVM/PARROT_CVMFS_REPO ]; then
   export PARROT_CVMFS_REPO="${PARROT_CVMFS_REPO} $($BB cat /UCVM/PARROT_CVMFS_REPO)"
 fi
+PARROT_OPTIONS="${PARROT_OPTIONS} --fake-setuid"
 if [ -f /UCVM/PARROT_OPTIONS ]; then
   export PARROT_OPTIONS="${PARROT_OPTIONS} $($BB cat /UCVM/PARROT_OPTIONS)"
 fi
