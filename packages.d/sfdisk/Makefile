@@ -6,6 +6,7 @@ SFDISK_BUILD_PRODUCT = $(SFDISK_SOURCETREE)/sfdisk
 SFDISK_STRIPPED = $(SFDISK_BUILD_PRODUCT)-stripped
 SFDISK_MAKEFILE = $(SFDISK_SOURCETREE)/Makefile
 SFDISK_CONFIGURE = $(SFDISK_SOURCETREE)/configure
+SFDISK_PATCHED = $(SFDISK_SOURCETREE)/sfdisk-patched
 
 all: $(SFDISK_BINARY)
 
@@ -23,7 +24,7 @@ $(SFDISK_STRIPPED): $(SFDISK_BUILD_PRODUCT)
 $(SFDISK_BUILD_PRODUCT): $(SFDISK_MAKEFILE)
 	$(MAKE) -j4 -C $(SFDISK_SOURCETREE) sfdisk
 
-$(SFDISK_MAKEFILE): $(SFDISK_CONFIGURE)
+$(SFDISK_MAKEFILE): $(SFDISK_CONFIGURE) $(SFDISK_PATCHED)
 	cd $(SFDISK_SOURCETREE) && ./configure \
 	  --enable-libfdisk \
 	  --enable-libuuid \
@@ -71,7 +72,13 @@ $(SFDISK_MAKEFILE): $(SFDISK_CONFIGURE)
 	  --disable-more \
 	  --disable-pg \
 	  --disable-schedutils \
-	  --disable-wall
+	  --disable-wall \
+	  --without-ncurses
+
+$(SFDISK_PATCHED): $(SFDISK_CONFIGURE)
+	cp config.guess $(SFDISK_SOURCETREE)/config/config.guess
+	cp config.sub $(SFDISK_SOURCETREE)/config/config.sub
+	touch $(SFDISK_PATCHED)
 
 $(SFDISK_CONFIGURE): | $(SFDISK_TARBALL)
 	tar -xvJf $(SFDISK_TARBALL)
