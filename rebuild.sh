@@ -69,9 +69,19 @@ cp "${BASEDIR}/include/runtime-init.sh" "${DESTDIR}/init"
 chmod +x "${DESTDIR}/init"
 
 # Run generation scripts
-for F in $(find ${SCRIPTS} -maxdepth 1 -type f -name '[0-9]*' | sort); do
-    process_file ${F}
-done
+if [ "`uname -m`" = "aarch64" ]; then
+    for F in $(find ${SCRIPTS} -maxdepth 1 -type f -name '[0-9]*' | sort); do
+        if [ ${F} != "scripts.d/12kexec" ]; then
+            echo ${F}
+            process_file ${F}
+        fi
+    done
+else
+    for F in $(find scripts.d -maxdepth 1 -type f -name '[0-9]*' | sort); do
+        echo ${F}
+        process_file ${F}
+    done
+fi
 
 # Copy kernel modules
 echo "[INF] Generating kernel modules"
