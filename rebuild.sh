@@ -69,6 +69,7 @@ cp "${BASEDIR}/include/runtime-init.sh" "${DESTDIR}/init"
 chmod +x "${DESTDIR}/init"
 
 # Run generation scripts
+# TODO(jblomer): this should be done more elegantly
 if [ "`uname -m`" = "aarch64" ]; then
     for F in $(find ${SCRIPTS} -maxdepth 1 -type f -name '[0-9]*' | sort); do
         if [ ${F} != "scripts.d/12kexec" ]; then
