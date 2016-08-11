@@ -12,6 +12,9 @@ require_versioned_package sfdisk ${SFDISK_STRONG_VERSION}
 # AUFS consistency check
 require_package auchk
 
+# GPT formatting
+require_versioned_package gptfdisk ${GPTFDISK_STRONG_VERSION}
+
 #===========================
 #FOR:RUN
 #===========================
@@ -19,13 +22,16 @@ require_package auchk
 ROOT_CREATE=0
 DEFAULT_SIZE_BYTES=$((20*1024*1024*1024))
 DEFAULT_SIZE_MB=$((${DEFAULT_SIZE_BYTES}/(1024*1024)))
+#Testing
+#DEFAULT_SIZE_BYTES=$((1*1024*1024*1024))
+#DEFAULT_SIZE_MB=$((${DEFAULT_SIZE_BYTES}/(1024*1024)))
 
 # Partition / format if necessary
 if [ ! -b "${ROOT_DEV}" ]; then
     # Make partition table on ephemeral storage
     if [ "x$FIRST_EMPTY_DISK" != "x" -a ! "x$_UCONTEXT_USE_BOOTHD" = "x1" ]; then
         log_start "Partitioning /dev/${FIRST_EMPTY_DISK}..."
-	DISK_SIZE_BYTES=$(blockdev --getsize64 /dev/${FIRST_EMPTY_DISK})
+        DISK_SIZE_BYTES=$(blockdev --getsize64 /dev/${FIRST_EMPTY_DISK})
         if [ "x$_UCONTEXT_RESIZE_ROOTFS" = "x0" -a ${DISK_SIZE_BYTES} -gt ${DEFAULT_SIZE_BYTES} ]; then
           # Use first 20G
           PARTITION_SIZE_MB=${DEFAULT_SIZE_MB}
@@ -37,7 +43,7 @@ if [ ! -b "${ROOT_DEV}" ]; then
         fi
         echo -e "0,${PARTITION_SIZE_MB},83${PARTITION_REST}" | sfdisk -uM /dev/${FIRST_EMPTY_DISK} >/dev/null 2>/dev/null
         [ $? -ne 0 ] && panic "Unable to partition root disk ${FIRST_EMPTY_DISK}"
-	# Update block devices
+        # Update block devices
         sync_block
         log_ok
     fi
@@ -45,26 +51,55 @@ if [ ! -b "${ROOT_DEV}" ]; then
     # Last resort: create another partition on boot disk
     if [ "x$FIRST_EMPTY_PARTITION" = "x" -a "x$BOOT_DISK" != "x" ]; then
         log_start "Adding partition(s) to boot disk /dev/${BOOT_DISK}..."
-        FREE_SIZE_BYTES=$(blockdev --getsize64 /dev/${BOOT_DISK})
-        FREE_SIZE_BYTES=$(($FREE_SIZE_BYTES - $(blockdev --getsize64 /dev/${BOOT_PARTITION})))
-        # 10M safety margin
+        BOOT_DISK_LABEL=$(parted -m -s /dev/${BOOT_DISK} print | sed s/:/\\n/g | sed '7q;d')
+        if [[ "x$BOOT_DISK_LABEL" = "xgpt" ]]; then
+            # Case 1: GPT
+            # Calculate last sector of ESP = SECTOR_END
+            # First, make sure that secondary GPT table is located at the end of the disk (if simply dd'ing ESP, GPT table is somewhere in between)
+            /sbin/sgdisk -e /dev/${BOOT_DISK}
+            # Retrieve free size
+            FREE_SIZE_BYTES=$(parted -m -s /dev/${BOOT_DISK} unit B print | sed s/:/\\n/g | sed '3q;d' | sed s/B//g)
+            FREE_SIZE_BYTES=$(($FREE_SIZE_BYTES - $(parted -m -s /dev/${BOOT_DISK} unit B print | sed s/:/\\n/g | sed '12q;d' | sed s/B//g)))
+        else
+            # Case 2: MBR
+            FREE_SIZE_BYTES=$(blockdev --getsize64 /dev/${BOOT_DISK})
+            FREE_SIZE_BYTES=$(($FREE_SIZE_BYTES - $(blockdev --getsize64 /dev/${BOOT_PARTITION})))
+        fi
+        # 20M safety margin
         FREE_SIZE_BYTES=$(($FREE_SIZE_BYTES - 20*1024*1024))
+        #echo "FREE_SIZE_BYTES: $FREE_SIZE_BYTES"
 
         # Less than 750M?  Give up
         if [ ${FREE_SIZE_BYTES} -lt $((750*1024*1024)) ]; then
             panic "No ephemeral storage, not enough free space on boot HD"
         fi
 
-        if [ "x$_UCONTEXT_RESIZE_ROOTFS" = "x0" -a ${FREE_SIZE_BYTES} -gt ${DEFAULT_SIZE_BYTES} ]; then
-            # Use first 20G
-            PARTITION_SIZE_MB=${DEFAULT_SIZE_MB}
-            # Partition rest to avoid the need to reboot later
-            PARTITION_REST="n\np\n3\n\n\n"
+        if [[ "x$BOOT_DISK_LABEL" = "xgpt" ]]; then
+            # Case 1: GPT
+            SECTOR_END=$(parted -m -s /dev/${BOOT_DISK} unit s print | sed s/:/\\n/g | sed '12q;d' | sed s/s//g)
+            SECTOR_START=$(($SECTOR_END + 1))
+            if [ "x$_UCONTEXT_RESIZE_ROOTFS" = "x0" -a ${FREE_SIZE_BYTES} -gt ${DEFAULT_SIZE_BYTES} ]; then
+                # Use first DEFAULT_SIZE_MB
+                SECTOR_BS=$(parted -m -s /dev/${BOOT_DISK} unit s print | sed s/:/\\n/g | sed '5q;d')
+                PARTITION_SIZE=$((${DEFAULT_SIZE_BYTES}/${SECTOR_BS}))
+                /sbin/sgdisk --new="$(echo "$FIRST_EMPTY_PARTITION" | grep -o -E '[0-9]+')":"${SECTOR_START}s":"$(($SECTOR_START+$PARTITION_SIZE))s" /dev/${BOOT_DISK}
+            else
+                # use all
+                /sbin/sgdisk --largest-new="$(echo "$FIRST_EMPTY_PARTITION" | grep -o -E '[0-9]+')" /dev/${BOOT_DISK}
+            fi
         else
-            # use all
-            PARTITION_SIZE_MB=
+            # Case 2: MBR
+            if [ "x$_UCONTEXT_RESIZE_ROOTFS" = "x0" -a ${FREE_SIZE_BYTES} -gt ${DEFAULT_SIZE_BYTES} ]; then
+                # Use first 20G
+                PARTITION_SIZE_MB=${DEFAULT_SIZE_MB}
+                # Partition rest to avoid the need to reboot later
+                PARTITION_REST="n\np\n3\n\n\n"
+            else
+                PARTITION_SIZE_MB=
+            fi
+            echo -e "n\np\n2\n\n+${PARTITION_SIZE_MB}M\n${PARTITION_REST}p\nw\n" | fdisk /dev/${BOOT_DISK} >/dev/null 2>/dev/null
         fi
-        echo -e "n\np\n2\n\n+${PARTITION_SIZE_MB}M\n${PARTITION_REST}p\nw\n" | fdisk /dev/${BOOT_DISK} >/dev/null 2>/dev/null
+
         # Update block devices
         sync_block
         log_ok
@@ -77,7 +112,7 @@ if [ ! -b "${ROOT_DEV}" ]; then
 
     # Create ext3 filesystem on the disk
     log_start "Formatting /dev/${FIRST_EMPTY_PARTITION}..."
-    /sbin/mke2fs -t ext4 -j -L UROOT -E lazy_itable_init /dev/${FIRST_EMPTY_PARTITION} >/var/log/partition.log 2>&1 
+    /sbin/mke2fs -t ext4 -j -L UROOT -E lazy_itable_init /dev/${FIRST_EMPTY_PARTITION} >/var/log/partition.log 2>&1
     [ $? -ne 0 ] && panic "Unable to create ext4 filesystem in /dev/${FIRST_EMPTY_PARTITION}"
     /sbin/tune2fs -O has_journal -c0 -i0 /dev/${FIRST_EMPTY_PARTITION} >/dev/null 2>/dev/null
     [ $? -ne 0 ] && panic "Unable to tune ext4 filesystem in /dev/${FIRST_EMPTY_PARTITION}"

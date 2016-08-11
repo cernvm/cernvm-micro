@@ -32,6 +32,7 @@ initrd.$(UCERNVM_STRONG_VERSION): rebuild.sh $(wildcard scripts.d/*) $(wildcard 
 	  SFDISK_STRONG_VERSION=$(SFDISK_STRONG_VERSION) \
 	  PARTED_STRONG_VERSION=$(PARTED_STRONG_VERSION) \
 	  CVMFS_STRONG_VERSION=$(CVMFS_STRONG_VERSION) \
+	  GPTFDISK_STRONG_VERSION=$(GPTFDISK_STRONG_VERSION) \
 	  EXTRAS_STRONG_VERSION=$(EXTRAS_STRONG_VERSION) \
 	./rebuild.sh
 
@@ -54,6 +55,11 @@ $(CERNVM_ROOTTREE)/version: boot initrd.$(UCERNVM_STRONG_VERSION)
 	$(MAKE) TOP=$(TOP) -C kernel
 	rm -rf $(CERNVM_ROOTTREE)
 	mkdir -p $(CERNVM_ROOTTREE)
+ifeq ($(ARCH),aarch64)
+	cp initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/initrd.img
+	touch $(CERNVM_ROOTTREE)/startup.nsh
+	echo "vmlinuz.xz initrd=initrd.img cernvm_path=cvm3 console=ttyAMA0 earlyprintk=pl011 debug uefi_debug ignore_loglevel" > $(CERNVM_ROOTTREE)/startup.nsh
+else
 	cd boot && gtar -c --exclude=.svn -f - . .ucernvm_boot_loader | (cd ../$(CERNVM_ROOTTREE) && gtar -xf -)
 	for file in \
 	  $(CERNVM_ROOTTREE)/isolinux/isolinux.cfg \
@@ -69,6 +75,7 @@ $(CERNVM_ROOTTREE)/version: boot initrd.$(UCERNVM_STRONG_VERSION)
 	done
 	cp $(CERNVM_ROOTTREE)/isolinux/isolinux.cfg $(CERNVM_ROOTTREE)/isolinux/syslinux.cfg
 	cp initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/cernvm/initrd.img
+endif
 	touch $(CERNVM_ROOTTREE)/.ucernvm_boot_loader
 	echo "$(CERNVM_REPOSITORY) at $(CERNVM_SYSTEM), uCernVM $(UCERNVM_STRONG_VERSION)" > $(CERNVM_ROOTTREE)/version
 
@@ -96,6 +103,24 @@ $(IMAGE_DIR)/$(IMAGE_NAME).iso: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTR
 	mv $(IMAGE_DIR)/$(IMAGE_NAME).iso.unsigned $(IMAGE_DIR)/$(IMAGE_NAME).iso
 
 $(IMAGE_DIR)/$(IMAGE_NAME).hdd: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/version
+ifeq ($(ARCH),aarch64)
+	# Case 1: AArch64
+	rm -f $(CERNVM_ROOTTREE)/vmlinuz*
+	cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).xz $(CERNVM_ROOTTREE)/vmlinuz.xz
+	# Considering approx. 50MB for the ESP as suggested gives us 100000 sectors with a block size of 512B
+	dd if=/dev/zero of=tmp/$(IMAGE_NAME).hdd bs=512 count=100000
+	parted -s tmp/$(IMAGE_NAME).hdd mklabel gpt
+	# start at offset 2048*512B=1MiB for optimal alignment (now standard in a lot of utilities and ensures proper alignment in most scenarios)
+	parted -s tmp/$(IMAGE_NAME).hdd mkpart fat32 2048s 100%
+	parted -s tmp/$(IMAGE_NAME).hdd set 1 boot on
+	losetup -o 1048576 /dev/loop5 tmp/$(IMAGE_NAME).hdd
+	mkfs.fat -F32 -s1 /dev/loop5
+	# To test, if boot process supports dd'ing ESP into large disk, do:
+	# dd if=/dev/zero of=test.hdd bs=512 count=0 seek=60000000
+	# dd if=tmp/$(IMAGE_NAME).hdd of=tmp/test.hdd  conv=notrunc
+	# and then boot test.hdd
+else
+	# Case 2: x86-64, PowerPc, ...
 	rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
 	cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).xz $(CERNVM_ROOTTREE)/cernvm/vmlinuz.xz
 	dd if=/dev/zero of=tmp/$(IMAGE_NAME).hdd bs=1024 count=24576
@@ -104,11 +129,15 @@ $(IMAGE_DIR)/$(IMAGE_NAME).hdd: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTR
 	parted -s tmp/$(IMAGE_NAME).hdd set 1 boot on
 	losetup -o 512 /dev/loop5 tmp/$(IMAGE_NAME).hdd
 	mkdosfs /dev/loop5
+endif
 	mkdir tmp/mountpoint-$(IMAGE_NAME) && mount /dev/loop5 tmp/mountpoint-$(IMAGE_NAME)
 	cd $(CERNVM_ROOTTREE) && gtar -c --exclude=.svn -f - . .ucernvm_boot_loader | (cd ../tmp/mountpoint-$(IMAGE_NAME) && gtar -xf -)
+	sync
 	umount tmp/mountpoint-$(IMAGE_NAME) && rmdir tmp/mountpoint-$(IMAGE_NAME)
 	losetup -d /dev/loop5
+ifneq ($(ARCH),aarch64)
 	syslinux --install --offset 512 --active --mbr --directory /isolinux tmp/$(IMAGE_NAME).hdd
+endif
 	mv tmp/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd.unsigned
 	./sign.sh $(IMAGE_DIR)/$(IMAGE_NAME).hdd.unsigned $(SINGING_URL) $(HOST_CERT) $(HOST_KEY) $(CA_BUNDLE) $(SIGNING_DN) $(UCERNVM_STRONG_VERSION) $(CERNVM_BRANCH) $(CERNVM_SYSTEM)
 	mv $(IMAGE_DIR)/$(IMAGE_NAME).hdd.unsigned $(IMAGE_DIR)/$(IMAGE_NAME).hdd
@@ -120,7 +149,7 @@ $(IMAGE_DIR)/$(IMAGE_NAME).tar.gz: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	mount /dev/loop5 tmp/gce/mountpoint
 	cat tmp/gce/mountpoint/isolinux/syslinux.cfg | sed s/console=tty0// | sed "s/lastarg/console=ttyS0/" > tmp/gce/mountpoint/isolinux/syslinux.cfg~
 	mv tmp/gce/mountpoint/isolinux/syslinux.cfg~ tmp/gce/mountpoint/isolinux/syslinux.cfg
-	cat tmp/gce/mountpoint/isolinux/syslinux.cfg    
+	cat tmp/gce/mountpoint/isolinux/syslinux.cfg
 	umount tmp/gce/mountpoint && rmdir tmp/gce/mountpoint
 	losetup -d /dev/loop5
 	cd tmp/gce && tar cvfz $(IMAGE_NAME).tar.gz disk.raw
@@ -154,11 +183,11 @@ $(IMAGE_DIR)/$(IMAGE_NAME).vhd: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	#while pgrep VBoxSVC > /dev/null; do true; done
 	#VBoxManage modifyhd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi --resize 25
 	#while pgrep VBoxSVC > /dev/null; do true; done
-	#VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi $(IMAGE_DIR)/$(IMAGE_NAME).vhd --format VHD --variant 
+	#VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi $(IMAGE_DIR)/$(IMAGE_NAME).vhd --format VHD --variant
 	#chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vhd
 	#rm -f $(IMAGE_DIR)/$(IMAGE_NAME)-working.vdi
 	#rm -f $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working
-		
+
 $(IMAGE_DIR)/$(IMAGE_NAME).vmdk: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vmdk
 	cp $(IMAGE_DIR)/$(IMAGE_NAME).vdi $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working
@@ -166,7 +195,7 @@ $(IMAGE_DIR)/$(IMAGE_NAME).vmdk: $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	VBoxManage clonehd $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working $(IMAGE_DIR)/$(IMAGE_NAME).vmdk --format VMDK --variant Stream
 	chmod 0644 $(IMAGE_DIR)/$(IMAGE_NAME).vmdk
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vdi.working
-	
+
 $(IMAGE_DIR)/$(IMAGE_NAME).ova: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	rm -rf /root/VirtualBox\ VMs /root/.config/VirtualBox
 	rm -rf $(IMAGE_DIR)/ova-build && mkdir $(IMAGE_DIR)/ova-build
@@ -209,4 +238,4 @@ $(IMAGE_DIR)/$(IMAGE_NAME).fat: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTR
 	mkdir tmp/mountpoint-$(IMAGE_NAME) && mount -o loop tmp/$(IMAGE_NAME).fat tmp/mountpoint-$(IMAGE_NAME)
 	cd $(CERNVM_ROOTTREE) && gtar -c --exclude=.svn -f - . .ucernvm_boot_loader | (cd ../tmp/mountpoint-$(IMAGE_NAME) && gtar -xf -)
 	umount tmp/mountpoint-$(IMAGE_NAME) && rmdir tmp/mountpoint-$(IMAGE_NAME)
-	mv tmp/$(IMAGE_NAME).fat $(IMAGE_DIR)/$(IMAGE_NAME).fat	
+	mv tmp/$(IMAGE_NAME).fat $(IMAGE_DIR)/$(IMAGE_NAME).fat

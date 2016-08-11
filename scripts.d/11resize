@@ -9,6 +9,7 @@ require_versioned_package parted ${PARTED_STRONG_VERSION}
 #FOR:RUN
 #===========================
 
+# ToDo GPT
 
 if [ -f ${ROOT_RW}/aux/resize ]; then
   log_start "Resizing root partition $(readlink /dev/disk/by-label/UROOT)..."
