@@ -1,3 +1,6 @@
+2.7-1:
+  * AArch64 support
+
 2.7-0:
   * Start multi-arch support
   * Cvmfs 2.2.3
