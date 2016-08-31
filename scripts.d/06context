@@ -173,7 +173,7 @@ download_userdata() {
 
 fetch_gce() {
   download_userdata 169.254.169.254 \
-    http://169.254.169.254/computeMetadata/v1/instance/attributes/cvm-user-data \
+    http://169.254.169.254/computeMetadata/v1/instance/attributes/user-data \
     http://169.254.169.254/computeMetadata/v1/instance/id \
     "X-Google-Metadata-Request: True"
   if [ $? -eq 0 ]; then
