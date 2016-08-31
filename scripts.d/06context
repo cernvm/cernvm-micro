@@ -176,11 +176,7 @@ fetch_gce() {
     http://169.254.169.254/computeMetadata/v1/instance/attributes/user-data \
     http://169.254.169.254/computeMetadata/v1/instance/id \
     "X-Google-Metadata-Request: True"
-  if [ $? -eq 0 ]; then
-    UCONTEXT_SRC="GCE"
-    base64 -d ${USER_DATA} > ${USER_DATA}~
-    mv ${USER_DATA}~ ${USER_DATA}
-  fi
+  [ $? -eq 0 ] && UCONTEXT_SRC="GCE" 
 }
 
 fetch_ec2() {
