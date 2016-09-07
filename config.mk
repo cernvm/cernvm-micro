@@ -3,8 +3,8 @@ ARCH = $(shell uname -m)
 # Versions of components
 UCERNVM_VERSION = 2.7
 UCERNVM_RELEASE = $(shell cat release)
-KERNEL_VANILLA_VERSION = 4.1.31
-KERNEL_CERNVM_RELEASE = 18
+KERNEL_VANILLA_VERSION = 4.1.32
+KERNEL_CERNVM_RELEASE = 19
 BB_UPSTREAM_VERSION = 1.23.2
 BB_RELEASE = 2
 CURL_UPSTREAM_VERSION = 7.48.0
@@ -46,7 +46,7 @@ else
 	IMAGE_FORMATS = fat iso hdd vdi vhd vmdk tar.gz ova box
 endif
 CERNVM_BRANCHES = sl7
-IMAGE_FORMATS = tar.gz
+IMAGE_FORMATS = tar.gz iso
 
 SIGNING_SERVER = cvm-sign01.cern.ch
 SINGING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image
