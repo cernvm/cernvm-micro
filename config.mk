@@ -45,14 +45,14 @@ else
 	CERNVM_BRANCHES = prod testing devel slc4 slc5 sl7
 	IMAGE_FORMATS = fat iso hdd vdi vhd vmdk tar.gz ova box
 endif
-CERNVM_BRANCHES = sl7
-IMAGE_FORMATS = tar.gz iso
+CERNVM_BRANCHES = boinc-ia32
+IMAGE_FORMATS = tar.gz iso hdd
 
 SIGNING_SERVER = cvm-sign01.cern.ch
 SINGING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image
 CA_BUNDLE = /etc/pki/tls/certs/cern-ca-bundle.crt
-HOST_CERT = /etc/pki/tls/certs/cvm-build20.crt
-HOST_KEY = /etc/pki/tls/private/cvm-build20.key
+HOST_CERT = /etc/pki/tls/certs/$(shell hostname -s).crt
+HOST_KEY = /etc/pki/tls/private/$(shell hostname -s).key
 SIGNING_DN = /DC=ch/DC=cern/OU=computers/CN=cvm-sign01.cern.ch
 
 # Set to one of CERNVM_BRANCHES by main Makefile
@@ -93,7 +93,7 @@ EXTRAS_STRONG_VERSION = $(EXTRAS_VERSION).cernvm.$(ARCH)
 
 CERNVM_SERVER = $(shell grep ^$(CERNVM_BRANCH) branch2server | awk '{print $$2}')
 CERNVM_PATH_PREFIX = $(shell grep ^$(CERNVM_BRANCH) branch2path | awk '{print $$2}')
-CERNVM_REPOSITORY = cernvm-$(CERNVM_BRANCH).cern.ch
+CERNVM_REPOSITORY = $(shell grep ^$(CERNVM_BRANCH) branch2repository | awk '{print $$2}')
 CERNVM_ROOTTREE = ucernvm-root-$(CERNVM_BRANCH).$(UCERNVM_STRONG_VERSION).$(IMAGE_FORMAT)
 IMAGE_DIR = ucernvm-images.$(UCERNVM_STRONG_VERSION)
 IMAGE_NAME = ucernvm-$(CERNVM_BRANCH).$(UCERNVM_STRONG_VERSION)
