@@ -46,7 +46,7 @@ else
 	IMAGE_FORMATS = fat iso hdd vdi vhd vmdk tar.gz ova box
 endif
 CERNVM_BRANCHES = boinc-ia32
-IMAGE_FORMATS = tar.gz iso hdd
+IMAGE_FORMATS = tar.gz iso hdd vdi
 
 SIGNING_SERVER = cvm-sign01.cern.ch
 SINGING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image

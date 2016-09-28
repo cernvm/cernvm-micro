@@ -1,3 +1,6 @@
+2.7-3:
+  * Move 32bit BOINC images to production
+
 2.7-2:
   * user "user-data" as a key for GCE
   * Kernel 4.1.32
