@@ -4,3 +4,4 @@ slc4		hepvm.cern.ch
 slc5		hepvm.cern.ch
 sl7		hepvm.cern.ch
 prod		cvmfs-stratum-one.cern.ch,cvmfs.fnal.gov,cvmfs.racf.bnl.gov,grid-cvmfs-one.desy.de
+boinc-ia32	cvmfs-stratum-one.cern.ch,cvmfs.fnal.gov,cvmfs.racf.bnl.gov,grid-cvmfs-one.desy.de

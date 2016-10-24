@@ -2,6 +2,9 @@
   * Kernel 4.1.34 (CVE-2016-5195 patched)
   * aufs 4.1.13+-20160912
 
+2.7-3:
+  * Move 32bit BOINC images to production
+
 2.7-2:
   * use "user-data" as a key for GCE
   * Kernel 4.1.32
