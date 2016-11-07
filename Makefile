@@ -155,6 +155,18 @@ $(IMAGE_DIR)/$(IMAGE_NAME).tar.gz: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	cd tmp/gce && tar cvfz $(IMAGE_NAME).tar.gz disk.raw
 	mv tmp/gce/$(IMAGE_NAME).tar.gz $(IMAGE_DIR)
 
+$(IMAGE_DIR)/$(IMAGE_NAME).hvm: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
+	rm -rf tmp/hvm && mkdir -p tmp/hvm/mountpoint
+	cp $(IMAGE_DIR)/$(IMAGE_NAME).hdd tmp/hvm/disk.raw
+	losetup -o 512 /dev/loop5 tmp/hvm/disk.raw
+	mount /dev/loop5 tmp/hvm/mountpoint
+	cat tmp/hvm/mountpoint/isolinux/syslinux.cfg | sed s/console=tty0// | sed "s/lastarg/console=ttyS0/" > tmp/hvm/mountpoint/isolinux/syslinux.cfg~
+	mv tmp/hvm/mountpoint/isolinux/syslinux.cfg~ tmp/hvm/mountpoint/isolinux/syslinux.cfg
+	cat tmp/hvm/mountpoint/isolinux/syslinux.cfg
+	umount tmp/hvm/mountpoint && rmdir tmp/hvm/mountpoint
+	losetup -d /dev/loop5
+	mv tmp/hvm/disk.raw $(IMAGE_DIR)/$(IMAGE_NAME).hvm
+
 $(IMAGE_DIR)/$(IMAGE_NAME).vdi: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	rm -f $(IMAGE_DIR)/$(IMAGE_NAME).vdi
 	cp $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd.working

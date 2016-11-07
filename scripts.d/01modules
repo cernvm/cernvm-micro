@@ -19,6 +19,10 @@ log_start "Loading predefined modules..."
 
 # Load modules
 #modprobe vmxnet
+modprobe ena
+modprobe i40evf
+modprobe ixgbevf
+modprobe igbvf
 modprobe e100
 modprobe e1000
 modprobe pcnet32

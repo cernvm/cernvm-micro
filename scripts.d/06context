@@ -181,8 +181,8 @@ fetch_gce() {
 
 fetch_ec2() {
   download_userdata 169.254.169.254 \
-    http://169.254.169.254/2009-04-04/user-data \
-    http://169.254.169.254/2009-04-04/meta-data/ami-id
+    http://169.254.169.254/2016-04-19/user-data \
+    http://169.254.169.254/2016-04-19/meta-data/ami-id
   [ $? -eq 0 ] && UCONTEXT_SRC="EC2"
 }
 
@@ -265,7 +265,7 @@ if [ ! -b "${ROOT_DEV}" ]; then
 
     # Check connection for EC2 compabtible server and proceed if connected
     if is_bit_set $connection_output 0; then
-      for data_source in openstack gce ec2; do
+      for data_source in gce ec2 openstack; do
         echo "looking for user data at $data_source" >> /var/log/context.log
         fetch_${data_source}
         [ -f ${USER_DATA} ] && break 2
