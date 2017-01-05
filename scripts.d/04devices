@@ -44,7 +44,7 @@ sync_block() {
             [ "x$(cat /sys/block/${DEV}/removable)" = "x1" ] && IS_REMOVABLE=1
         #echo "sync_block: IS_PARTITION $IS_PARTITION, HOSTING_DISK: $HOSTING_DISK, IS_ON_DISK: $IS_ON_DISK"
         IS_READONLY=0
-        [ $IS_READONLY -eq 1 ] && [ -f /sys/block/${DEV}/ro ] && \
+        [ $IS_PARTITION -eq 1 ] && [ -f /sys/block/${DEV}/ro ] && \
             [ "x$(cat /sys/block/${DEV}/ro)" = "x1" ] && IS_READONLY=1
 
         # Fetch label and update /dev/disk/...
