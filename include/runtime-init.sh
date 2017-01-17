@@ -11,6 +11,7 @@ panic() {
 }
 
 # Log the beginning/end of an action
+# Action description (passed to log_start) must not exceed 54 characters
 _log_pad=0
 log_start() {
     [ $SILENT -eq 1 ] && return
