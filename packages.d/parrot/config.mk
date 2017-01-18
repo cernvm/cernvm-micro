@@ -1,5 +1,5 @@
 PARROT_GIT = https://github.com/cooperative-computing-lab/cctools.git
-PARROT_TREEISH = 5c2f35785bb4
+PARROT_TREEISH = e76290b
 PARROT_SOURCETREE = parrot-$(PARROT_TREEISH)
 
 LIBCVMFS_GIT = https://github.com/cvmfs/cvmfs.git
