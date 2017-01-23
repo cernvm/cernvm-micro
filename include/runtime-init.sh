@@ -11,6 +11,7 @@ panic() {
 }
 
 # Log the beginning/end of an action
+# Action description (passed to log_start) must not exceed 54 characters
 _log_pad=0
 log_start() {
     [ $SILENT -eq 1 ] && return
@@ -38,6 +39,19 @@ log_info() {
     SPC=${SPC//??/ }
     echo -e " \33[32m$@\33[0m"
 }
+
+# Cluster contextualization
+
+# Check if 'cvm_cluster_master' was set in the ucernvm section
+IsOnMasterMachine() {
+    local master_field=$_UCONTEXT_CVM_CLUSTER_MASTER
+    if [ "x$master_field" = "xtrue" -o "x$master_field" = "xTrue" -o "x$master_field" = "x1" -o "x$master_field" = "xyes" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 
 # System initialization begins here
 

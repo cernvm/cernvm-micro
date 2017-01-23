@@ -10,6 +10,12 @@
 UCONTEXT=${ROOT_RW}/context/ucontext
 EXTRA_UCONTEXT=${ROOT_RW}/context/extra-ucontext
 
+# Marker file for amiconfig cluster contextualization
+if [ -f /ami-contextualized ]; then
+  mkdir -p ${ROOT_RW}/context
+  cp /ami-contextualized ${ROOT_RW}/context/ami-contextualized
+fi
+
 if [ -f ${USER_DATA} ]; then
   mkdir -p ${ROOT_RW}/context
   cp ${USER_DATA} ${ROOT_RW}/context/user-data
