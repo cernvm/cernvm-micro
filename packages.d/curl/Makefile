@@ -52,7 +52,6 @@ $(CURL_MAKEFILE): $(CURL_CONFIGURE)
 	  --enable-symbol-hiding \
 	  --disable-tls-srp \
 	  --disable-ntlm-wb \
-	  --without-ssl \
 	  --without-winssl \
 	  --without-darwinssl \
 	  --without-gnutls \
@@ -60,8 +59,6 @@ $(CURL_MAKEFILE): $(CURL_CONFIGURE)
 	  --without-cyassl \
 	  --without-axtls \
  	  --without-nss \
-	  --without-ca-bundle \
-	  --without-ca-path \
 	  --without-libssh2 \
 	  --without-libmetalink \
 	  --without-libidn \
