@@ -4,6 +4,7 @@
 #===========================
 
 require_versioned_package curl ${CURL_STRONG_VERSION}
+require_package ca-certificates
 
 #===========================
 #FOR:RUN
@@ -87,7 +88,7 @@ master_contextualization() {
     local CURL_HEADERS="-H Content-Type:application/json"
 
     #@- == take data from stdin, ignore output and print only the response status code
-    local CURL_CMD="curl -s -o /dev/null -w %{http_code} -XPOST $CURL_HEADERS -d @- $SERVICE_URL/api/v1/clusters/$CLUSTER_PIN/keys"
+    local CURL_CMD="curl --cacert /etc/cernvm/ca-bundle.crt -s -o /dev/null -w %{http_code} -XPOST $CURL_HEADERS -d @- $SERVICE_URL/api/v1/clusters/$CLUSTER_PIN/keys"
 
     local cnt=0
     local status_code=
@@ -122,7 +123,7 @@ make_slave_curl_request() {
 
     local CURL_HEADERS="-H Accept:text/plain"
     # Output format: Content_of_the_reply\n\nstatus_code_number
-    local CURL_CMD_TEMPLATE="curl -s -w \n\n%{http_code} -XGET"
+    local CURL_CMD_TEMPLATE="curl --cacert /etc/cernvm/ca-bundle.crt -s -w \n\n%{http_code} -XGET"
     local CURL_CMD="$CURL_CMD_TEMPLATE $CURL_HEADERS $url"
 
     local response=
