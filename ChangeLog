@@ -1,3 +1,6 @@
+2.8-2:
+  * Add ca certificates
+ 
 2.8-1:
   * Add cluster contextualization scripts
 
