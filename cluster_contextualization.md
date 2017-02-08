@@ -2,7 +2,7 @@ Cluster contextualization
 =========================
 
 Distribution of master data (IP address) to slaves via a single point. The master data is
-applied before the usual contextualization is done.
+applied before the usual contextualization is done. Only CernVM 4 is supported.
 
 Usage
 -----
@@ -34,6 +34,9 @@ Usage
     [ucernvm-begin]
     cvm_cluster_master=yes
     cvm_cluster_pin=enico1qq0oey
+    cvmfs_branch=cernvm-sl7.cern.ch
+    cvmfs_server=hepvm.cern.ch
+    cvmfs_path=cvm4
     [ucernvm-end]
 
 ### Slave context file example
@@ -56,6 +59,9 @@ Usage
 
     [ucernvm-begin]
     cvm_cluster_pin=enico1qq0oey
+    cvmfs_branch=cernvm-sl7.cern.ch
+    cvmfs_server=hepvm.cern.ch
+    cvmfs_path=cvm4
     [ucernvm-end]
 
 As you can see, the master and slave context files only differ in the content of the `ucernvm` section, where
