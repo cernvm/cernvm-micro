@@ -4,6 +4,7 @@ Cluster contextualization
 Distribution of master data (IP address) to slaves via a single point. The master data is
 applied before the usual contextualization is done. Only CernVM 4 is supported.
 
+
 Usage
 -----
 1. Create or get a context file for your machines.
@@ -15,6 +16,10 @@ Usage
    in this file, to the location where the master's IP address should be placed.
 6. Launch a master VM.
 7. Launch slave VMs.
+
+
+Cluster PIN is for one time use only. If you want to create a new cluster or recreate an old one, you
+must generate a new PIN.
 
 ### Master context file example
 
@@ -78,7 +83,23 @@ These have to be placed in the `ucernvm` section of the context file.
 - `cvm_cluster_master`: whether the context file is for the master or not.
 - `cvm_service_url`: URL of the service you want to use for the synchronization. Defaults to
   `https://cernvm-online.cern.ch`. You may specify the port as well, e.g. `my-service.example.com:8000`.
-    
+
+
+Master/worker behaviour
+-----------------------
+
+Worker nodes does not have to be created before the master node, you can create them at the same time.
+Worker nodes poll the Cluster PIN Service for approximately 25 minutes, every 30 seconds (totalling
+to 50 requests). If the master node boot is not completed by this time, no cluster contextualization is done
+and the worker nodes boot resumes.
+The same mechanism applies to the master node as well when POSTing the master data to the Cluster
+PIN Service. If the data could not be submitted during this time (e.g. there is no internet connection
+or the Cluster PIN Service is not responding), master resumes the boot, without any cluster contextualization.
+
+If the master cannot POST the data, e.g. when you accidentally create two machines with a master context
+with the same/reused PIN, it will keep trying for a specified period of time (see above), until
+it gives up and resumes the boot. No cluster contextualization is performed in that case.
+
 
 Architecture
 ------------
