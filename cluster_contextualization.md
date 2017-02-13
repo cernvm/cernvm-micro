@@ -85,14 +85,15 @@ These have to be placed in the `ucernvm` section of the context file.
   `https://cernvm-online.cern.ch`. You may specify the port as well, e.g. `my-service.example.com:8000`.
 
 
-Master/worker behaviour
------------------------
+Master/worker node behaviour
+----------------------------
 
 Worker nodes does not have to be created before the master node, you can create them at the same time.
 Worker nodes poll the Cluster PIN Service for approximately 25 minutes, every 30 seconds (totalling
 to 50 requests). If the master node boot is not completed by this time, no cluster contextualization is done
 and the worker nodes boot resumes.
-The same mechanism applies to the master node as well when POSTing the master data to the Cluster
+
+The same mechanism applies to the master node when POSTing the master data to the Cluster
 PIN Service. If the data could not be submitted during this time (e.g. there is no internet connection
 or the Cluster PIN Service is not responding), master resumes the boot, without any cluster contextualization.
 
