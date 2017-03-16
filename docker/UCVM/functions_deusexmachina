@@ -28,6 +28,6 @@ __ADDTO() {
 
 __MKDIR() {
   path="$1"
-  $BB mkdir "${path}"
+  $BB mkdir -p "${path}"
 }
 

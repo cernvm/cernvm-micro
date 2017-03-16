@@ -58,7 +58,7 @@ __MKDIR() {
   path="$1"
   if [ "x$ENV_PARROT_MOUNTED" = "x" ]; then
     __DEBUG create empty ${path}
-    $BB mkdir "${path}"
+    $BB mkdir -p "${path}"
   fi
 }
 
