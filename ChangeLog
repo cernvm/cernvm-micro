@@ -1,3 +1,6 @@
+2.8-4:
+  * Set consoleblank=0 kernel parameter
+
 2.8-3:
   * Cosmetics in Docker container creation 
   * Kernel 4.1.39
