@@ -19,13 +19,11 @@ UCONTEXT_RETRIES=2
 
 # Function to analyze output from portprobe.c, if bit(specific IP address) = 1, connected 
 # input args: output from portprobe.c, index of the IP address
-is_bit_set() {  
+is_bit_set() {
   output=$1
   index_server=$2
-  shift_left=$((1-$index_server))
-  let "output <<= $shift_left"
-  let "output &= 2"
-  if [[ $output == 0 ]]; then
+  mask=$((1 << $index_server))
+  if [ $(($output & $mask)) -ne 0 ]; then
     return 1
   else
     return 0
@@ -273,7 +271,7 @@ if [ ! -b "${ROOT_DEV}" ]; then
     fi
 
     # Check connection for CloudStack endpoint
-    if is_bit_set $connection_output 1 -o is_bit_set $connection_output 2; then
+    if is_bit_set $connection_output 1 || is_bit_set $connection_output 2; then
       for data_source in cloudstack; do
         echo "looking for user data at $data_source" >> /var/log/context.log
         fetch_${data_source}
