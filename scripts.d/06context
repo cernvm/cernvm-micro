@@ -13,8 +13,8 @@ USER_DATA=/user-data
 UCONTEXT_TMP=/ucontext
 UCONTEXT_SRC="(none)"
 UCONTEXT_TIMEOUT=2
-UCONTEXT_TIMEOUT_DATA=10
-UCONTEXT_RETRIES=2
+UCONTEXT_TIMEOUT_DATA=16
+UCONTEXT_RETRIES=6
 
 
 # Function to analyze output from portprobe.c, if bit(specific IP address) = 1, connected 
