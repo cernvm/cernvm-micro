@@ -155,6 +155,9 @@ $(IMAGE_DIR)/$(IMAGE_NAME).tar.gz: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	cd tmp/gce && tar cvfz $(IMAGE_NAME).tar.gz disk.raw
 	mv tmp/gce/$(IMAGE_NAME).tar.gz $(IMAGE_DIR)
 
+$(IMAGE_DIR)/$(IMAGE_NAME).qcow2: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
+	qemu-img convert -f raw -O qcow2 $(IMAGE_DIR)/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).qcow2
+
 $(IMAGE_DIR)/$(IMAGE_NAME).hvm: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	rm -rf tmp/hvm && mkdir -p tmp/hvm/mountpoint
 	cp $(IMAGE_DIR)/$(IMAGE_NAME).hdd tmp/hvm/disk.raw
