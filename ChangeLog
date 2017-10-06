@@ -1,4 +1,5 @@
 2.8-6:
+  * Fix EC2 contextualization which stopped working with 2.8-5
   * Increase context fetching timeouts
   * Kernel 4.1.44
 

@@ -24,9 +24,9 @@ is_bit_set() {
   index_server=$2
   mask=$((1 << $index_server))
   if [ $(($output & $mask)) -ne 0 ]; then
-    return 1
-  else
     return 0
+  else
+    return 1
   fi
 }
 

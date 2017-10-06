@@ -25,7 +25,6 @@ done
 
 # reset_root_password
 
-
 # Unmount filesystems
 umount /sys
 umount /proc
