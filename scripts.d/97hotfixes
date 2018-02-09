@@ -20,16 +20,6 @@ if [ ! -d ${ROOT}/lib/modules/$(uname -r) ]; then
   log_ok
 fi
 
-# Fix mount.vmhgfs
-for orig_mount in ${ROOT}/sbin/mount.vmhgfs ${ROOT}/usr/sbin/mount.vmhgfs; do
-  if [ -f $orig_mount ]; then
-    if ! diff -q $orig_mount ${ROOT}/lib/modules/$(uname -r)/kernel/fs/mount.vmhgfs >/dev/null 2>&1; then
-      mv $orig_mount ${orig_mount}.orig
-      cp ${ROOT}/lib/modules/$(uname -r)/kernel/fs/mount.vmhgfs $orig_mount
-    fi
-  fi
-done
-
 # Inject extra user data
 if [ -f "${EXTRA_USER_DATA}" ]; then
   mkdir -p "${ROOT}$(dirname ${EXTRA_USER_DATA_INJECTED})"

@@ -19,7 +19,7 @@ log_start "Loading predefined modules..."
 
 # Load modules
 #modprobe vmxnet
-modprobe ena
+# modprobe ena built-in with 4.14
 modprobe i40evf
 modprobe ixgbevf
 modprobe igbvf
