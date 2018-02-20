@@ -1,0 +1,17 @@
+yum install \
+  valgrind-devel \
+  libattr-devel \
+  patch \
+  pkgconfig \
+  python-devel \
+  unzip \
+  fuse-devel \
+  openssl-devel \
+  openssl-static \
+  glibc-static \
+  libuuid-devel \
+  git \
+  cmake \
+  gcc \
+  gcc-c++ \
+  bzip2
