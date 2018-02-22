@@ -5,3 +5,4 @@ slc5		cvm3
 sl7		cvm4
 prod		cvm3
 boinc-ia32	boinc-i686
+aarch64		cvm4-aarch64

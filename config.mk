@@ -39,7 +39,7 @@ CERNVM_SYSTEM = HEAD
 #CERNVM_BRANCHES = prod devel
 #IMAGE_FORMATS = box
 ifeq ($(ARCH),aarch64)
-	CERNVM_BRANCHES = devel
+	CERNVM_BRANCHES = aarch64
 	IMAGE_FORMATS = hdd
 else
 	CERNVM_BRANCHES = prod testing devel slc4 slc5 sl7

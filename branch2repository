@@ -5,3 +5,4 @@ slc5		cernvm-slc5.cern.ch
 sl7		cernvm-sl7.cern.ch
 prod		cernvm-prod.cern.ch
 boinc-ia32	cernvm-prod.cern.ch
+aarch64		cernvm-aarch64.cern.ch

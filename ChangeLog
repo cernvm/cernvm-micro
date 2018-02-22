@@ -1,3 +1,6 @@
+3.0-7:
+  * Adjustments for aarch64
+
 3.0-6:
   * Kernel 4.14.18
   * Remove AFS
