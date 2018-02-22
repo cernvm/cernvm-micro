@@ -58,7 +58,7 @@ $(CERNVM_ROOTTREE)/version: boot initrd.$(UCERNVM_STRONG_VERSION)
 ifeq ($(ARCH),aarch64)
 	cp initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTREE)/initrd.img
 	touch $(CERNVM_ROOTTREE)/startup.nsh
-	echo "vmlinuz.xz initrd=initrd.img cernvm_path=cvm3 console=ttyAMA0 earlyprintk=pl011 debug uefi_debug ignore_loglevel" > $(CERNVM_ROOTTREE)/startup.nsh
+	echo "vmlinuz.xz initrd=initrd.img cernvm_path=cvm4-aarch64 cvmfs_repos=cernvm-aarch64.cern.ch cvmfs_server=hepvm.cern.ch cvmfs_repository_tag=HEAD console=ttyAMA0 earlyprintk=pl011 quiet systemd.show_status=1 loglevel=3" > $(CERNVM_ROOTTREE)/startup.nsh
 else
 	cd boot && gtar -c --exclude=.svn -f - . .ucernvm_boot_loader | (cd ../$(CERNVM_ROOTTREE) && gtar -xf -)
 	for file in \
