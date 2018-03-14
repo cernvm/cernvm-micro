@@ -50,5 +50,9 @@ if [ $use_dhcp -eq 1 ]; then
   udhcpc -qnf -t 20 -O staticroutes -O mtu >/var/log/udhcpc.log 2>&1
 fi
 
+ifconfig -a > /var/log/network.log
+route -e >> /var/log/network.log
+cat /etc/resolv.conf >> /var/log/network.log
+
 log_ok
 

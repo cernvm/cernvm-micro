@@ -9,7 +9,7 @@
 
 # Save log file on persistent storage
 
-for logfile in /var/log/udhcpc.log /var/log/context.log; do
+for logfile in /var/log/udhcpc.log /var/log/network.log /var/log/context.log; do
   if [ -f "$logfile" ]; then
     mkdir -p ${ROOT}/mnt/.rw/ulogs
     cp "$logfile" ${ROOT}/mnt/.rw/ulogs/
