@@ -45,8 +45,8 @@ else
 	CERNVM_BRANCHES = prod testing devel slc4 slc5 sl7
 	IMAGE_FORMATS = fat iso hdd hvm vdi vhd vmdk tar.gz ova box qcow2
 endif
-#CERNVM_BRANCHES = sl7 prod devel
-#IMAGE_FORMATS = iso hdd
+CERNVM_BRANCHES = sl7 prod devel
+IMAGE_FORMATS = iso hdd
 
 SIGNING_SERVER = cvm-sign01.cern.ch
 SINGING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image
