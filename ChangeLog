@@ -1,3 +1,7 @@
+3.0-9:
+  * Bump kernel to 4.14.39
+  * Enable squashfs
+
 3.0-8:
   * Log network configuration
 
