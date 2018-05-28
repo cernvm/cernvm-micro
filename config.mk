@@ -35,7 +35,6 @@ EXTRAS_VERSION = 1.6
 
 CERNVM_INCREASE_RELEASE = 0
 
-CERNVM_SYSTEM = HEAD
 #CERNVM_BRANCHES = prod devel
 #IMAGE_FORMATS = box
 ifeq ($(ARCH),aarch64)
@@ -58,6 +57,8 @@ SIGNING_DN = /DC=ch/DC=cern/OU=computers/CN=cvm-sign01.cern.ch
 # Set to one of CERNVM_BRANCHES by main Makefile
 CERNVM_BRANCH =
 IMAGE_FORMAT =
+
+CERNVM_SYSTEM = $(shell grep ^$(CERNVM_BRANCH) branch2tag | awk '{print $$2}')
 
 # Derived parameters
 UCERNVM_STRONG_VERSION = $(UCERNVM_VERSION)-$(UCERNVM_RELEASE).cernvm.$(ARCH)
