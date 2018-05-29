@@ -1,10 +1,10 @@
 ARCH = $(shell uname -m)
 
 # Versions of components
-UCERNVM_VERSION = 3.0
+UCERNVM_VERSION = 3.1
 UCERNVM_RELEASE = $(shell cat release)
-KERNEL_VANILLA_VERSION = 4.14.39
-KERNEL_CERNVM_RELEASE = 10
+KERNEL_VANILLA_VERSION = 4.14.44
+KERNEL_CERNVM_RELEASE = 11
 BB_UPSTREAM_VERSION = 1.23.2
 BB_RELEASE = 2
 CURL_UPSTREAM_VERSION = 7.48.0
@@ -41,10 +41,10 @@ ifeq ($(ARCH),aarch64)
 	CERNVM_BRANCHES = aarch64
 	IMAGE_FORMATS = hdd
 else
-	CERNVM_BRANCHES = prod testing devel slc4 slc5 sl7
+	CERNVM_BRANCHES = v3prod v4prod v3testing v4testing devel sl7 slc4 slc5
 	IMAGE_FORMATS = fat iso hdd hvm vdi vhd vmdk tar.gz ova box qcow2
 endif
-CERNVM_BRANCHES = sl7 prod devel
+CERNVM_BRANCHES = sl7 v3prod devel v3testing v4testing
 IMAGE_FORMATS = iso hdd
 
 SIGNING_SERVER = cvm-sign01.cern.ch

@@ -12,8 +12,8 @@ require_versioned_package curl ${CURL_STRONG_VERSION}
 USER_DATA=/user-data
 UCONTEXT_TMP=/ucontext
 UCONTEXT_SRC="(none)"
-UCONTEXT_TIMEOUT=600
-UCONTEXT_TIMEOUT_DATA=600
+UCONTEXT_TIMEOUT=2
+UCONTEXT_TIMEOUT_DATA=16
 
 
 # Function to analyze output from portprobe.c, if bit(specific IP address) = 1, connected 

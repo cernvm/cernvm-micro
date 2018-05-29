@@ -1,8 +1,10 @@
 devel		cvm3
-testing		cvm3
+v3testing	cvm3
+v4testing	cvm4
+v3prod		cvm3
+v4prod		cvm4
 slc4		cvm3
 slc5		cvm3
 sl7		cvm4
-prod		cvm3
 boinc-ia32	boinc-i686
 aarch64		cvm4-aarch64
