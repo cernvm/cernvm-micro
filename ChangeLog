@@ -1,3 +1,10 @@
+2018.06-1:
+  * Switch to new versioning scheme
+
+3.0-1:
+  * Bump kernel to 4.14.44
+  * Accommodate for CernVM 3 and 4 both in the cernvm-prod.cern.ch repository
+
 3.0-9:
   * Bump kernel to 4.14.39
   * Enable squashfs

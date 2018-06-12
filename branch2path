@@ -1,6 +1,7 @@
 devel		cvm3
 v3testing	cvm3
 v4testing	cvm4
+prod		cvm4
 v3prod		cvm3
 v4prod		cvm4
 slc4		cvm3
