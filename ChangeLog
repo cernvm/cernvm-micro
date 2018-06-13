@@ -1,3 +1,9 @@
+2018.06-3:
+  * Fix name in ova image
+
+2018.06-2:
+  * Adjust BNL, FNAL stratum 1 URLs
+
 2018.06-1:
   * Switch to new versioning scheme
 

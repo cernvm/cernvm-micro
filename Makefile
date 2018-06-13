@@ -226,13 +226,13 @@ $(IMAGE_DIR)/$(IMAGE_NAME).ova: $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 	VBoxManage createhd --filename $(IMAGE_DIR)/ova-build/scratch.vmdk --size 20000 --format VMDK --variant Stream
 	rm -rf /root/VirtualBox\ VMs
 	while pgrep VBoxSVC > /dev/null; do true; done
-	VBoxManage createvm --name "CernVM 3" --ostype Linux26_64 --register
-	VBoxManage storagectl "CernVM 3" --name SATA --add sata --portcount 4 --hostiocache on --bootable on
-	VBoxManage modifyvm "CernVM 3" --memory 1024 --vram 20 --nic1 nat --nic2 hostonly --natdnshostresolver1 on --natdnshostresolver2 on --clipboard bidirectional --draganddrop hosttoguest
+	VBoxManage createvm --name "CernVM" --ostype Linux26_64 --register
+	VBoxManage storagectl "CernVM" --name SATA --add sata --portcount 4 --hostiocache on --bootable on
+	VBoxManage modifyvm "CernVM" --memory 1024 --vram 20 --nic1 nat --nic2 hostonly --natdnshostresolver1 on --natdnshostresolver2 on --clipboard bidirectional --draganddrop hosttoguest
 	while pgrep VBoxSVC > /dev/null; do true; done
-	VBoxManage storageattach "CernVM 3" --storagectl SATA --port 0 --type hdd --medium $(TOP)/$(IMAGE_DIR)/ova-build/boot.vmdk
-	VBoxManage storageattach "CernVM 3" --storagectl SATA --port 1 --type hdd --medium $(TOP)/$(IMAGE_DIR)/ova-build/scratch.vmdk
-	VBoxManage export "CernVM 3" -o $(TOP)/$(IMAGE_DIR)/ova-build/$(IMAGE_NAME).ova \
+	VBoxManage storageattach "CernVM" --storagectl SATA --port 0 --type hdd --medium $(TOP)/$(IMAGE_DIR)/ova-build/boot.vmdk
+	VBoxManage storageattach "CernVM" --storagectl SATA --port 1 --type hdd --medium $(TOP)/$(IMAGE_DIR)/ova-build/scratch.vmdk
+	VBoxManage export "CernVM" -o $(TOP)/$(IMAGE_DIR)/ova-build/$(IMAGE_NAME).ova \
 	  --vsys 0 \
 	  --product "CernVM" \
 	  --producturl "http://cernvm.cern.ch"
