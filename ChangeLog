@@ -1,3 +1,7 @@
+2018.06-4:
+  * Bump kernel to 4.14.55
+  * Add TUN module
+
 2018.06-3:
   * Fix name in ova image
 
