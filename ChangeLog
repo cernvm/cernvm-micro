@@ -1,3 +1,8 @@
+2018.10-1:
+  * Use PAC proxy auto discovery instead of geolist.txt
+  * Bump kernel to 4.14.76
+  * Bump cvmfs to 2.5.1
+
 2018.06-4:
   * Bump kernel to 4.14.55
   * Add TUN module

@@ -3,9 +3,6 @@
 #FOR:BUILD
 #===========================
 
-# Fuse
-echo user_allow_other > ${DESTDIR}/etc/fuse.conf
-
 # Require some config files that reside on packages.d
 require_versioned_package cvmfs ${CVMFS_STRONG_VERSION}
 require_versioned_package curl ${CURL_STRONG_VERSION}
@@ -23,12 +20,16 @@ log_start "Starting CernVM File System..."
 # Setup cvmfs options
 CVMFS_SERVER="hepvm.cern.ch"
 CVMFS_REPOS="cernvm-devel.cern.ch"
-auto_proxy=$(curl -f --connect-timeout 10 http://cernvm.cern.ch/config 2>/dev/null | grep ^CVMFS_HTTP_PROXY= | sed s/^CVMFS_HTTP_PROXY=//)
-if [ -z "$auto_proxy" ]; then
-  CVMFS_PROXY="\"auto;DIRECT\""
-else
-  CVMFS_PROXY="\"$auto_proxy\""
-fi
+
+# Proxy auto discovery
+get_pac_urls() {
+  local wpad_server_list="http://wlcg-wpad.cern.ch/wpad.dat http://wlcg-wpad.fnal.gov/wpad.dat"
+  local wpad_servers=$(echo $wpad_server_list | tr ' ' '\n' | shuf | tr '\n' ';' | sed 's/;$//')
+  echo "http://grid-wpad/wpad.dat;http://wpad/wpad.dat;$wpad_servers"
+}
+CVMFS_PAC_URLS="\"$(get_pac_urls)\""
+CVMFS_PROXY="\"auto;DIRECT\""
+
 CVMFS_URL=""
 CERNVM_ARCH=$(uname -m)
 CERNVM_PATH=""
@@ -142,7 +143,7 @@ mount_cvmfs() {
   local retval=$?
   local nameserver=$(cat /etc/resolv.conf | grep ^nameserver | head -n1 | awk '{print $2}')
   echo -n "nameserver set ${nameserver}" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
-  local active_proxy=$(xattr ${ROOT_RO} user.proxy)
+  #local active_proxy=$(xattr ${ROOT_RO} user.proxy)
   # Not needed any more since Geo-API is available
   #if [ "x$active_proxy" = "xDIRECT" ]; then
   #  echo -n "host probe" | nc local:${CVMFS_CACHE}/${CVMFS_REPOS}/cvmfs_io.${CVMFS_REPOS} > /dev/null
