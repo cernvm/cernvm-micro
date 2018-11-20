@@ -1,3 +1,6 @@
+2018-10-2:
+  * Make cernvm_path contextualizable
+
 2018.10-1:
   * Use PAC proxy auto discovery instead of geolist.txt
   * Bump kernel to 4.14.76

@@ -126,6 +126,7 @@ The following key-value pairs are recognized:
 |cvmfs_server     | List of Stratum 1 servers         | E.g.: cvmfs-stratum-one.cern.ch,another.com      |
 |cvmfs_branch     | The repository name               | The url is currently fixed to hepvm.cern.ch      |
 |cvmfs_tag        | The snapshot name                 | For long-term data preservation                  |
+|cernvm_path      | The relative rootfs path          | Select /cvm3 or /cvm4 for CernVM 3/4 resp.       |
 |cernvm_inject    | Base64 encoded .tar.gz ball       | Extracted in the root tree (without leading /)   |
 |useglideinWMS    | on/off (default: on)              | Set off to stop glidinwms user data auto detect  |
 
