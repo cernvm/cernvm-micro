@@ -35,7 +35,7 @@ $(CURL_MAKEFILE): $(CURL_CONFIGURE)
 	  --disable-ldaps \
 	  --disable-rtsp \
 	  --enable-http \
-	  --disable-proxy \
+	  --enable-proxy \
 	  --disable-dict \
 	  --disable-telnet \
 	  --disable-tftp \

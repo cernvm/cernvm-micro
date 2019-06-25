@@ -17,6 +17,7 @@
 
 
 struct arg_struct {
+  int port;
   int client_socket;
   char *server_address;
   int idx;
@@ -41,7 +42,7 @@ static void *connect_to_server(void *arguments)
   char *server_address = args->server_address;
   server.sin_family = AF_INET;
   server.sin_addr.s_addr = inet_addr(server_address);
-  server.sin_port = htons(80);
+  server.sin_port = htons(args->port);
   if (connect(socket_desc, (struct sockaddr *) &server, sizeof(server)) < 0) {
     pthread_mutex_lock(&lock_return_values);
     return_values[args->idx] = 0;
@@ -58,19 +59,20 @@ static void *connect_to_server(void *arguments)
 
 
 static void usage(char *progname) {
-  printf("%s <IP 1> <IP 2> ... <timeout (s)>\n", progname);
+  printf("%s <PORT> <IP 1> <IP 2> ... <timeout (s)>\n", progname);
 }
 
 
 int main(int argc , char *argv[])
 {
-  if (argc < 3) {
+  if (argc < 4) {
     usage(argv[0]);
     return 1;
   }
 
   int timeout = atoi(argv[argc-1]);
-  unsigned N = argc - 2;
+  int port = atoi(argv[1]);
+  unsigned N = argc - 3;
 
   int socket_create;
   pthread_t threads[N];
@@ -80,8 +82,9 @@ int main(int argc , char *argv[])
   for (i = 0; i < N; i++) {
     socket_create = socket(AF_INET , SOCK_STREAM , 0);
     struct arg_struct *args = malloc(sizeof(struct arg_struct));
+    args->port = port;
     args->client_socket = socket_create;
-    args->server_address = argv[i+1];
+    args->server_address = argv[i+2];
     args->idx = i;
     return_values[i] = -1;
     if (pthread_create(&threads[i], NULL, connect_to_server, (void *)args) < 0)

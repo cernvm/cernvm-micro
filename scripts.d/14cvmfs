@@ -138,6 +138,51 @@ touch ${ROOT_RW}/aux/uid_map ${ROOT_RW}/aux/gid_map
 [ x"$CVMFS_REPOSITORY_TAG" != "x" ] && echo "CVMFS_REPOSITORY_TAG=${CVMFS_REPOSITORY_TAG}" >> /etc/cvmfs/config.d/${CVMFS_REPOS}.conf
 [ x"$CVMFS_ROOT_HASH" != "x" ] && echo "CVMFS_ROOT_HASH=${CVMFS_ROOT_HASH}" >> /etc/cvmfs/config.d/${CVMFS_REPOS}.conf 
 
+wait_on_squid() {
+  local seconds="$_UCONTEXT_CVMFS_WAIT_ON_SQUID"
+  [ "x$seconds" != "x" ] || return 0
+
+  cvmfs2 -o parse ${CVMFS_REPOS} / > /tmp/cvmfs-config
+  local url_list=$(. /tmp/cvmfs-config; echo $CVMFS_SERVER_URL)
+  local nurls=$(($(echo "$url_list" | tr -cd \; | wc -c) + 1))
+  local url=$(echo "$url_list" | cut -d\; -f1)
+  local proxy=$(. /tmp/cvmfs-config; echo $CVMFS_HTTP_PROXY)
+  local pac=$(. /tmp/cvmfs-config; echo $CVMFS_PAC_URLS)
+  local rawlist=$(CVMFS_PAC_URLS="$pac" cvmfs2 __wpad__ $proxy $url)
+  rawlist=$(echo $rawlist | tr \; " ")
+  rawlist=$(echo $rawlist | tr \| " ")
+  local list=
+  for p in $rawlist; do
+    [ "x$p" = "x" ] && continue
+    [ "x$p" = "DIRECT" ] && continue
+    list="$list $p"
+  done
+
+  log_info "waiting on proxies [$list]"
+  local starttime=
+  local endtime=
+  local remaining=
+  local i=0
+  while true; do
+    url=$(echo "$url_list" | cut -d\; -f$(( (i % nurls) + 1 )))
+    for p in $list; do
+      log_start "probing ${p} --> ${url}..."
+      starttime=$(date +%s)
+      http_proxy="$p" curl -f -s -o /dev/null --connect-timeout $seconds ${url}/.cvmfspublished
+      if [ $? -eq 0 ]; then
+        log_ok
+        break 2 
+      fi
+      log_fail
+      endtime=$(date +%s)
+      remaining=$((seconds - (endtime - starttime)))
+      [ $remaining -gt 0 ] && sleep $remaining
+    done
+    i=$((i+1))
+  done
+  return 0
+}
+
 mount_cvmfs() {
   cvmfs2 -o allow_other,config=/etc/cvmfs/config.d/${CVMFS_REPOS}.conf,cvmfs_suid ${CVMFS_REPOS} ${ROOT_RO} 2>/dev/null >/dev/null
   #cvmfs2 -d -f -o allow_other,config=/etc/cvmfs/config.d/${CVMFS_REPOS}.conf,cvmfs_suid ${CVMFS_REPOS} ${ROOT_RO}
@@ -152,6 +197,7 @@ mount_cvmfs() {
   return $retval
 }
 
+wait_on_squid
 mount_cvmfs
 if [ $? -ne 0 ]; then
   echo "CernVM-FS syslog:"

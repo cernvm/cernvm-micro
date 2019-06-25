@@ -255,9 +255,9 @@ if [ ! -b "${ROOT_DEV}" ]; then
     local dhcp_server=$(cat /var/lib/dhcp-server)
     if [ "x${dhcp_server}" != "x" ]; then
       dhcp_server_present=1
-      connection_output="$(portprobe 169.254.169.254 10.1.1.1 ${dhcp_server} ${UCONTEXT_TIMEOUT})"
+      connection_output="$(portprobe 80 169.254.169.254 10.1.1.1 ${dhcp_server} ${UCONTEXT_TIMEOUT})"
     else
-      connection_output="$(portprobe 169.254.169.254 10.1.1.1 ${UCONTEXT_TIMEOUT})"
+      connection_output="$(portprobe 80 169.254.169.254 10.1.1.1 ${UCONTEXT_TIMEOUT})"
     fi
 
     # Check connection for EC2 compabtible server and proceed if connected

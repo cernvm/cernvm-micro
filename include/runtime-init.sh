@@ -12,11 +12,9 @@ panic() {
 
 # Log the beginning/end of an action
 # Action description (passed to log_start) must not exceed 54 characters
-_log_pad=0
 log_start() {
     [ $SILENT -eq 1 ] && return
     STR="$@"
-    let _log_pad=54-${#STR}
     echo -en "[\33[1;37mINF\33[0m] $@"
 }
 log_warn() {
@@ -29,14 +27,10 @@ log_fail() {
 }
 log_ok() {
     [ $SILENT -eq 1 ] && return
-    SPC=$(seq $_log_pad)
-    SPC=${SPC//??/ }
     echo -e " \33[32mcheck\33[0m"
 }
 log_info() {
     [ $SILENT -eq 1 ] && return
-    SPC=$(seq $_log_pad)
-    SPC=${SPC//??/ }
     echo -e " \33[32m$@\33[0m"
 }
 
