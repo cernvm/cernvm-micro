@@ -23,7 +23,7 @@ CVMFS_REPOS="cernvm-devel.cern.ch"
 
 # Proxy auto discovery
 get_pac_urls() {
-  local wpad_server_list="http://wlcg-wpad.cern.ch/wpad.dat http://wlcg-wpad.fnal.gov/wpad.dat"
+  local wpad_server_list="http://cernvm-wpad.cern.ch/wpad.dat http://cernvm-wpad.fnal.gov/wpad.dat"
   local wpad_servers=$(echo $wpad_server_list | tr ' ' '\n' | shuf | tr '\n' ';' | sed 's/;$//')
   echo "http://grid-wpad/wpad.dat;http://wpad/wpad.dat;$wpad_servers"
 }
