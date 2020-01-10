@@ -1,4 +1,14 @@
-2010-06-1:
+2020-01-1:
+  * Add CloudFlare CDN together with CVMFS_CDN contextualzation variable.
+    The CVMFS_CDN servers will replace CVMFS_SERVER if it is not NONE.  If
+    unset, the baked in cvmfs_cdn command line parameter is used, unless a
+    custom proxy or server is set in the contextualiztion.
+
+2019-12-1:
+  * Update kernel version to 4.14.157
+  * Add CIFS kernel module
+
+2019-06-1:
   * Use cernvm-wpad servers replacing wlcg-wpad servers
   * Build curl with proxy support
   * Update kernel to 4.14.129

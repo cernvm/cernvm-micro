@@ -1,0 +1,11 @@
+devel		NONE
+v3testing	NONE
+v4testing	NONE
+slc4		NONE
+slc5		NONE
+sl7		NONE
+prod		s1cern-cvmfs.openhtc.io,s1ral-cvmfs.openhtc.io;s1bnl-cvmfs.openhtc.io;s1fnal-cvmfs.openhtc.io;s1unl-cvmfs.openhtc.io
+v3prod		s1cern-cvmfs.openhtc.io,s1ral-cvmfs.openhtc.io;s1bnl-cvmfs.openhtc.io;s1fnal-cvmfs.openhtc.io;s1unl-cvmfs.openhtc.io
+v4prod		s1cern-cvmfs.openhtc.io,s1ral-cvmfs.openhtc.io;s1bnl-cvmfs.openhtc.io;s1fnal-cvmfs.openhtc.io;s1unl-cvmfs.openhtc.io
+boinc-ia32	s1cern-cvmfs.openhtc.io,s1ral-cvmfs.openhtc.io;s1bnl-cvmfs.openhtc.io;s1fnal-cvmfs.openhtc.io;s1unl-cvmfs.openhtc.io
+aarch64		NONE
