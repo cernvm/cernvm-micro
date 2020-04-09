@@ -1,3 +1,6 @@
+2020-04-1:
+  * Add cern-it4 and cern-it5 keys
+
 2020-01-1:
   * Add CloudFlare CDN together with CVMFS_CDN contextualzation variable.
     The CVMFS_CDN servers will replace CVMFS_SERVER if it is not NONE.  If
