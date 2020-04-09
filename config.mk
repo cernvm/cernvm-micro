@@ -1,7 +1,7 @@
 ARCH = $(shell uname -m)
 
 # Versions of components
-UCERNVM_VERSION = 2020.01
+UCERNVM_VERSION = 2020.04
 UCERNVM_RELEASE = $(shell cat release)
 KERNEL_VANILLA_VERSION = 4.14.157
 KERNEL_CERNVM_RELEASE = 17
