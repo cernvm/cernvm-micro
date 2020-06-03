@@ -101,7 +101,7 @@ $(IMAGE_DIR)/$(IMAGE_NAME).iso: initrd.$(UCERNVM_STRONG_VERSION) $(CERNVM_ROOTTR
 	cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).xz $(CERNVM_ROOTTREE)/cernvm/vmlinuz.xz
 	mkisofs -R -o $(IMAGE_DIR)/$(IMAGE_NAME).iso.unsigned -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table $(CERNVM_ROOTTREE)
 ifneq ($(ARCH),aarch64)	
-	./sign.sh $(IMAGE_DIR)/$(IMAGE_NAME).iso.unsigned $(SINGING_URL) $(HOST_CERT) $(HOST_KEY) $(CA_BUNDLE) $(SIGNING_DN) $(UCERNVM_STRONG_VERSION) $(CERNVM_BRANCH) $(CERNVM_SYSTEM)
+	./sign.sh $(IMAGE_DIR)/$(IMAGE_NAME).iso.unsigned $(SIGNING_URL) $(HOST_CERT) $(HOST_KEY) $(CA_BUNDLE) $(SIGNING_DN) $(UCERNVM_STRONG_VERSION) $(CERNVM_BRANCH) $(CERNVM_SYSTEM)
 endif
 	mv $(IMAGE_DIR)/$(IMAGE_NAME).iso.unsigned $(IMAGE_DIR)/$(IMAGE_NAME).iso
 
@@ -143,7 +143,7 @@ ifneq ($(ARCH),aarch64)
 endif
 	mv tmp/$(IMAGE_NAME).hdd $(IMAGE_DIR)/$(IMAGE_NAME).hdd.unsigned
 ifneq ($(ARCH),aarch64)
-	./sign.sh $(IMAGE_DIR)/$(IMAGE_NAME).hdd.unsigned $(SINGING_URL) $(HOST_CERT) $(HOST_KEY) $(CA_BUNDLE) $(SIGNING_DN) $(UCERNVM_STRONG_VERSION) $(CERNVM_BRANCH) $(CERNVM_SYSTEM)
+	./sign.sh $(IMAGE_DIR)/$(IMAGE_NAME).hdd.unsigned $(SIGNING_URL) $(HOST_CERT) $(HOST_KEY) $(CA_BUNDLE) $(SIGNING_DN) $(UCERNVM_STRONG_VERSION) $(CERNVM_BRANCH) $(CERNVM_SYSTEM)
 endif
 	mv $(IMAGE_DIR)/$(IMAGE_NAME).hdd.unsigned $(IMAGE_DIR)/$(IMAGE_NAME).hdd
 

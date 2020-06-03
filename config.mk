@@ -48,7 +48,7 @@ endif
 #IMAGE_FORMATS = iso ova hdd
 
 SIGNING_SERVER = cvm-sign02.cern.ch
-SINGING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image
+SIGNING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image
 CA_BUNDLE = /etc/pki/tls/certs/cern-ca-bundle.crt
 HOST_CERT = /etc/pki/tls/certs/$(shell hostname -s).crt
 HOST_KEY = /etc/pki/tls/private/$(shell hostname -s).key
