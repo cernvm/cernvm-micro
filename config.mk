@@ -47,12 +47,12 @@ endif
 #CERNVM_BRANCHES = prod v4prod v4testing sl7
 #IMAGE_FORMATS = iso ova hdd
 
-SIGNING_SERVER = cvm-sign01.cern.ch
+SIGNING_SERVER = cvm-sign02.cern.ch
 SINGING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image
 CA_BUNDLE = /etc/pki/tls/certs/cern-ca-bundle.crt
 HOST_CERT = /etc/pki/tls/certs/$(shell hostname -s).crt
 HOST_KEY = /etc/pki/tls/private/$(shell hostname -s).key
-SIGNING_DN = /DC=ch/DC=cern/OU=computers/CN=cvm-sign01.cern.ch
+SIGNING_DN = /DC=ch/DC=cern/OU=computers/CN=cvm-sign02.cern.ch
 
 # Set to one of CERNVM_BRANCHES by main Makefile
 CERNVM_BRANCH =

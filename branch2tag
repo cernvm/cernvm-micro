@@ -1,0 +1,11 @@
+devel		HEAD
+v3testing	HEAD
+v4testing	HEAD4
+slc4		HEAD
+slc5		HEAD
+sl7		HEAD4
+prod		HEAD4
+v3prod		HEAD
+v4prod		HEAD4
+boinc-ia32	HEAD
+aarch64		HEAD
