@@ -11,7 +11,7 @@ $(KERNEL_DIR)/~done:
 	curl $(KERNEL_SOURCE) > $(KERNEL_TARBALL) 2>/dev/null
 	tar xfz $(KERNEL_TARBALL)
 	cd $(KERNEL_DIR) && rm -rf firmware-* headers-* && mv modules-*/lib . && rmdir modules-*
-	rm -f $(KERNEL_TARBALL)	
+	mv $(KERNEL_TARBALL) /data/releases/kernel/
 	touch $(KERNEL_DIR)/~done
 
 clean:
