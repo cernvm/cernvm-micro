@@ -9,9 +9,6 @@ require_versioned_package e2fsprogs ${E2FSPROGS_STRONG_VERSION}
 # Require disk partitioning tools
 require_versioned_package sfdisk ${SFDISK_STRONG_VERSION}
 
-# AUFS consistency check
-require_package auchk
-
 # GPT formatting
 require_versioned_package gptfdisk ${GPTFDISK_STRONG_VERSION}
 
