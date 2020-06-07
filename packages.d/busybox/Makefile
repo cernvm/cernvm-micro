@@ -21,10 +21,10 @@ $(BB_STRIPPED): $(BB_BUILD_PRODUCT)
 	strip $(BB_STRIPPED)
 
 $(BB_BUILD_PRODUCT): $(BB_MAKEFILE) $(BB_CONFIG)
-	$(MAKE) -j4 -C $(BB_SOURCETREE)
+	$(MAKE) CC=musl-gcc -j10 -C $(BB_SOURCETREE)
 
 $(BB_MAKEFILE): $(BB_TARBALL)
-	tar -xvzf $(BB_TARBALL)
+	tar -xvf $(BB_TARBALL)
 	touch $(BB_MAKEFILE)
 
 $(BB_CONFIG): busybox-config $(BB_MAKEFILE)
