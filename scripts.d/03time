@@ -14,8 +14,7 @@ NTP_PEER=pool.ntp.org
 log_start "Getting time from $NTP_PEER..."
 
 # Running ntpd
-#rdate -s $NTP_PEER
-timeout -t 5 ntpclient -s -h $NTP_PEER >/dev/null 2>&1
+timeout 5 /bin/ntpclient -s -h $NTP_PEER >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   log_ok
 else

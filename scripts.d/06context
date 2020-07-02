@@ -252,7 +252,7 @@ if [ ! -b "${ROOT_DEV}" ]; then
 
     dhcp_server_present=0
     connection_output= 
-    local dhcp_server=$(cat /var/lib/dhcp-server)
+    dhcp_server=$(cat /var/lib/dhcp-server)
     if [ "x${dhcp_server}" != "x" ]; then
       dhcp_server_present=1
       connection_output="$(portprobe 80 169.254.169.254 10.1.1.1 ${dhcp_server} ${UCONTEXT_TIMEOUT})"
