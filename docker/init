@@ -1,4 +1,4 @@
-#!/UCVM/busybox bash
+#!/UCVM/busybox sh
 #
 # This file is part of CernVM.
 #
@@ -21,7 +21,7 @@ __FINALIZE $@
 [ -f /UCVM/post.sh ] && . /UCVM/post.sh
 
 if [ "x$1" = "x" ]; then
-  exec /bin/bash
+  exec /bin/sh
 else
   exec $@
 fi
