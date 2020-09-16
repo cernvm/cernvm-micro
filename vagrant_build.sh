@@ -11,6 +11,8 @@ NAME="$4"
 [ -z "$OUTPUT" ] && exit 1
 [ -z "$NAME" ] && exit 1
 
+rm -rf "/root/VirtualBox VMs/cernvm-vagrant"
+
 CUR_DIR="$PWD"
 
 TEMP_DIR="$(mktemp -d)"

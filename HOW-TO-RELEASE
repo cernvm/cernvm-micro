@@ -6,10 +6,11 @@ HOW TO RELEASE the uCernVM Bootloader
 - cp -av ucernvm-images-$VERSION /data/releases
 - Add production symlinks [1]
 - Update /data/releases/latest
+- deploy.sh
 - Web site: update downloads page
 - Web site: add news entry
 
 [1]
 cd /data/releases/production
-for format in fat hdd hvm iso ova qcow2 tar.gz vdi vhd; do ln -fs ../ucernvm-images.2020.07-1.cernvm.x86_64/ucernvm-v4prod.2020.07-1.cernvm.x86_64.$format cernvm4-micro-2020.07-1.$format; done
-for format in fat hdd hvm iso ova qcow2 tar.gz vdi vhd; do ln -fs ../ucernvm-images.2020.07-1.cernvm.x86_64/ucernvm-v3prod.2020.07-1.cernvm.x86_64.$format cernvm3-micro-2020.07-1.$format; done
+for format in fat box hdd hvm iso ova qcow2 tar.gz vdi vhd; do ln -fs ../ucernvm-images.2020.07-1.cernvm.x86_64/ucernvm-v4prod.2020.07-1.cernvm.x86_64.$format cernvm4-micro-2020.07-1.$format; done
+for format in fat box hdd hvm iso ova qcow2 tar.gz vdi vhd; do ln -fs ../ucernvm-images.2020.07-1.cernvm.x86_64/ucernvm-v3prod.2020.07-1.cernvm.x86_64.$format cernvm3-micro-2020.07-1.$format; done
