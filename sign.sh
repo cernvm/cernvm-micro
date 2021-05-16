@@ -46,12 +46,12 @@ rm -f ${IMAGE}.signature-response
 echo "--- Verifying signature ---"
 openssl x509 -in ${IMAGE}.certificate -pubkey -noout > ${IMAGE}.pubkey
 openssl verify -CAfile ${CACHAIN} ${IMAGE}.certificate
-if [ "x$DN" != "x$(openssl x509 -in ${IMAGE}.certificate -subject -noout | awk '{print $2}')" ]; then
+if [ "x$DN" != "x$(openssl x509 -in ${IMAGE}.certificate -subject -noout | tr -d " ")" ]; then
   rm -f ${IMAGE}.pubkey ${IMAGE}.signature ${IMAGE}.certificate
   exit 1
 fi
 openssl dgst -sha256 ${IMAGE}
-openssl rsautl -verify -inkey ${IMAGE}.pubkey -pubin -in ${IMAGE}.signature | openssl asn1parse -inform der
+openssl rsautl -verify -inkey "${IMAGE}.pubkey" -pubin -in ${IMAGE}.signature | openssl asn1parse -inform der
 openssl dgst -sha256 -verify ${IMAGE}.pubkey -signature ${IMAGE}.signature ${IMAGE}
 rm -f ${IMAGE}.pubkey
 

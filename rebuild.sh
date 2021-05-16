@@ -109,7 +109,7 @@ depmod -a -b "${DESTDIR}" $KERNEL_STRONG_VERSION
 # Build initrd
 echo "[INF] Compressing init ramdisk"
 cd "${DESTDIR}"
-find . | cpio -H newc -o | xz -9 --check=crc32 > ${TARGET}
+find . | cpio -H newc -o | zstd -19 > ${TARGET}
 
 # Remove temporary dir
 echo $DESTDIR

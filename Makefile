@@ -126,9 +126,9 @@ else
 	# Case 2: x86-64, PowerPc, ...
 	rm -f $(CERNVM_ROOTTREE)/cernvm/vmlinuz*
 	cp kernel/cernvm-kernel-$(KERNEL_STRONG_VERSION)/vmlinuz-$(KERNEL_STRONG_VERSION).xz $(CERNVM_ROOTTREE)/cernvm/vmlinuz.xz
-	dd if=/dev/zero of=tmp/$(IMAGE_NAME).hdd bs=1024 count=24576
+	dd if=/dev/zero of=tmp/$(IMAGE_NAME).hdd bs=1024 count=32000
 	parted -s tmp/$(IMAGE_NAME).hdd mklabel msdos
-	parted -s tmp/$(IMAGE_NAME).hdd mkpart primary fat32 0 $$((23*1024*1024))B
+	parted -s tmp/$(IMAGE_NAME).hdd mkpart primary fat32 0 $$((30*1024*1024))B
 	parted -s tmp/$(IMAGE_NAME).hdd set 1 boot on
 	losetup -o 512 /dev/loop5 tmp/$(IMAGE_NAME).hdd
 	mkdosfs /dev/loop5

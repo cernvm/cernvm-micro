@@ -1,7 +1,7 @@
 ARCH = $(shell uname -m)
 
 # Versions of components
-UCERNVM_VERSION = 2021.05@CernVM-5
+UCERNVM_VERSION = 2021.05~CernVM5
 UCERNVM_RELEASE = $(shell cat release)
 KERNEL_VANILLA_VERSION = 5.10.37
 KERNEL_CERNVM_RELEASE = 1
@@ -41,14 +41,15 @@ else
 	IMAGE_FORMATS = fat iso hdd hvm vdi vhd vmdk tar.gz ova box qcow2
 endif
 CERNVM_BRANCHES = v4prod
-IMAGE_FORMATS = iso
+IMAGE_FORMATS = iso hdd
 
 SIGNING_SERVER = cvm-sign02.cern.ch
 SIGNING_URL = https://$(SIGNING_SERVER)/cgi-bin/cernvm/sign-image
 CA_BUNDLE = /etc/pki/tls/certs/cern-ca-bundle.crt
 HOST_CERT = /etc/pki/tls/certs/$(shell hostname -s).crt
 HOST_KEY = /etc/pki/tls/private/$(shell hostname -s).key
-SIGNING_DN = /DC=ch/DC=cern/OU=computers/CN=cvm-sign02.cern.ch
+#SIGNING_DN = /DC=ch/DC=cern/OU=computers/CN=cvm-sign02.cern.ch
+SIGNING_DN = subject=DC=ch,DC=cern,OU=computers,CN=cvm-sign02.cern.ch
 
 # Set to one of CERNVM_BRANCHES by main Makefile
 CERNVM_BRANCH =
