@@ -1,3 +1,3 @@
 CURL_SOURCETREE = curl-$(CURL_UPSTREAM_VERSION)
 CURL_TARBALL = curl-$(CURL_UPSTREAM_VERSION).tar.gz
-CURL_SOURCE = https://curl.haxx.se/download/$(CURL_TARBALL)
+CURL_SOURCE = https://curl.se/download/$(CURL_TARBALL)

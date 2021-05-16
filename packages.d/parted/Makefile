@@ -36,7 +36,7 @@ $(PARTED_MAKEFILE): $(PARTED_CONFIGURE)
 
 $(PARTED_CONFIGURE): | $(PARTED_TARBALL)
 	tar -xvJf $(PARTED_TARBALL)
-	patch -p0 < parted_dm.patch
+	#patch -p0 < parted_dm.patch
 	mv parted-$(PARTED_UPSTREAM_VERSION) $(PARTED_SOURCETREE)
 
 $(PARTED_TARBALL):
