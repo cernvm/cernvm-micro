@@ -118,18 +118,19 @@ user data everything is ignored expect a block of the form
 
 The following key-value pairs are recognized:
 
-| Key                | Value                             | Comments                                         |
-|--------------------|-----------------------------------|--------------------------------------------------|
-|resize_rootfs       | on/off                            | use all of the harddisk instead of the first 20G |
-|cvmfs_http_proxy    | HTTP proxy in CernVM-FS notation  |                                                  |
-|cvmfs_pac_urls      | WPAD proxy autoconfig URLs        | URLs are ';'-separated, should return PAC files  |
-|cvmfs_server        | List of Stratum 1 servers         | E.g.: cvmfs-stratum-one.cern.ch,another.com      |
-|cvmfs_branch        | The repository name               | The url is currently fixed to hepvm.cern.ch      |
-|cvmfs_tag           | The snapshot name                 | For long-term data preservation                  |
-|cvmfs_wait_on_squid | Timeout in seconds                | Waits for any of the proxies becoming available  |
-|cernvm_path         | The relative rootfs path          | Select /cvm3 or /cvm4 for CernVM 3/4 resp.       |
-|cernvm_inject       | Base64 encoded .tar.gz ball       | Extracted in the root tree (without leading /)   |
-|useglideinWMS       | on/off (default: on)              | Set off to stop glidinwms user data auto detect  |
+| Key                | Value                             | Comments                                             |
+|--------------------|-----------------------------------|------------------------------------------------------|
+|resize_rootfs       | on/off                            | use all of the harddisk instead of the first 20G     |
+|cvmfs_http_proxy    | HTTP proxy in CernVM-FS notation  |                                                      |
+|cvmfs_pac_urls      | WPAD proxy autoconfig URLs        | URLs are ';'-separated, should return PAC files      |
+|cvmfs_server        | List of Stratum 1 servers         | E.g.: cvmfs-stratum-one.cern.ch,another.com          |
+|cvmfs_cdn           | List of CDN reverse servers       | E.g.: s1cern-cvmfs.openhtc.io,s1ral-cvmfs.openhtc.io |
+|cvmfs_branch        | The repository name               | The url is currently fixed to hepvm.cern.ch          |
+|cvmfs_tag           | The snapshot name                 | For long-term data preservation                      |
+|cvmfs_wait_on_squid | Timeout in seconds                | Waits for any of the proxies becoming available      |
+|cernvm_path         | The relative rootfs path          | Select /cvm3 or /cvm4 for CernVM 3/4 resp.           |
+|cernvm_inject       | Base64 encoded .tar.gz ball       | Extracted in the root tree (without leading /)       |
+|useglideinWMS       | on/off (default: on)              | Set off to stop glidinwms user data auto detect      |
 
 
 ### Extra User Data
